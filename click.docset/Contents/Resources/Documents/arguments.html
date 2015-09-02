@@ -1,0 +1,313 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Arguments &mdash; click</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="click" href="index.html" />
+    <link rel="next" title="Commands and Groups" href="commands.html" />
+    <link rel="prev" title="Options" href="options.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="arguments">
+<span id="id1"></span><h1>Arguments<a class="headerlink" href="#arguments" title="Permalink to this headline">¶</a></h1>
+<p>Arguments work similarly to <a class="reference internal" href="options.html#options"><span>options</span></a> but are positional.
+They also only support a subset of the features of options due to their
+syntactical nature. Click will also not attempt to document arguments for
+you and wants you to document them manually in order to avoid ugly help
+pages.</p>
+<div class="section" id="basic-arguments">
+<h2>Basic Arguments<a class="headerlink" href="#basic-arguments" title="Permalink to this headline">¶</a></h2>
+<p>The most basic option is a simple string argument of one value.  If no
+type is provided, the type of the default value is used, and if no default
+value is provided, the type is assumed to be <a class="reference internal" href="api.html#click.STRING" title="click.STRING"><code class="xref py py-data docutils literal"><span class="pre">STRING</span></code></a>.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.argument</span><span class="p">(</span><span class="s">&#39;filename&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">touch</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And what it looks like:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ touch foo.txt
+foo.txt
+</pre></div>
+</div>
+</div>
+<div class="section" id="variadic-arguments">
+<h2>Variadic Arguments<a class="headerlink" href="#variadic-arguments" title="Permalink to this headline">¶</a></h2>
+<p>The second most common version is variadic arguments where a specific (or
+unlimited) number of arguments is accepted.  This can be controlled with
+the <code class="docutils literal"><span class="pre">nargs</span></code> parameter.  If it is set to <code class="docutils literal"><span class="pre">-1</span></code>, then an unlimited number
+of arguments is accepted.</p>
+<p>The value is then passed as a tuple.  Note that only one argument can be
+set to <code class="docutils literal"><span class="pre">nargs=-1</span></code>, as it will eat up all arguments.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.argument</span><span class="p">(</span><span class="s">&#39;src&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="nd">@click.argument</span><span class="p">(</span><span class="s">&#39;dst&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;move </span><span class="si">%s</span><span class="s"> to folder </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">dst</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>And what it looks like:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ copy foo.txt bar.txt my_folder
+move foo.txt to folder my_folder
+move bar.txt to folder my_folder
+</pre></div>
+</div>
+<p>Note that this is not how you would write this application.  The reason
+for this is that in this particular example the arguments are defined as
+strings.  Filenames, however, are not strings!  They might be on certain
+operating systems, but not necessarily on all.  For better ways to write
+this, see the next sections.</p>
+<div class="admonition-note-on-non-empty-variadic-arguments admonition">
+<p class="first admonition-title">Note on Non-Empty Variadic Arguments</p>
+<p>If you come from <code class="docutils literal"><span class="pre">argparse</span></code>, you might be missing support for setting
+<code class="docutils literal"><span class="pre">nargs</span></code> to <code class="docutils literal"><span class="pre">+</span></code> to indicate that at least one argument is required.</p>
+<p class="last">This is supported by setting <code class="docutils literal"><span class="pre">required=True</span></code>.  However, this should
+not be used if you can avoid it as we believe scripts should gracefully
+degrade into becoming noops if a variadic argument is empty.  The
+reason for this is that very often, scripts are invoked with wildcard
+inputs from the command line and they should not error out if the
+wildcard is empty.</p>
+</div>
+</div>
+<div class="section" id="file-arguments">
+<span id="file-args"></span><h2>File Arguments<a class="headerlink" href="#file-arguments" title="Permalink to this headline">¶</a></h2>
+<p>Since all the examples have already worked with filenames, it makes sense
+to explain how to deal with files properly.  Command line tools are more
+fun if they work with files the Unix way, which is to accept <code class="docutils literal"><span class="pre">-</span></code> as a
+special file that refers to stdin/stdout.</p>
+<p>Click supports this through the <a class="reference internal" href="api.html#click.File" title="click.File"><code class="xref py py-class docutils literal"><span class="pre">click.File</span></code></a> type which
+intelligently handles files for you.  It also deals with Unicode and bytes
+correctly for all versions of Python so your script stays very portable.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.argument</span><span class="p">(</span><span class="s">&#39;input&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s">&#39;rb&#39;</span><span class="p">))</span>
+<span class="nd">@click.argument</span><span class="p">(</span><span class="s">&#39;output&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s">&#39;wb&#39;</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">inout</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">chunk</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">chunk</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">output</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And what it does:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ inout - hello.txt
+hello
+^D
+$ inout hello.txt -
+hello
+</pre></div>
+</div>
+</div>
+<div class="section" id="file-path-arguments">
+<h2>File Path Arguments<a class="headerlink" href="#file-path-arguments" title="Permalink to this headline">¶</a></h2>
+<p>In the previous example, the files were opened immediately.  But what if
+we just want the filename?  The naïve way is to use the default string
+argument type.  However, remember that Click is Unicode-based, so the string
+will always be a Unicode value.  Unfortunately, filenames can be Unicode or
+bytes depending on which operating system is being used.  As such, the type
+is insufficient.</p>
+<p>Instead, you should be using the <a class="reference internal" href="api.html#click.Path" title="click.Path"><code class="xref py py-class docutils literal"><span class="pre">Path</span></code></a> type, which automatically
+handles this ambiguity.  Not only will it return either bytes or Unicode
+depending on what makes more sense, but it will also be able to do some
+basic checks for you such as existence checks.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.argument</span><span class="p">(</span><span class="s">&#39;f&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">exists</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">touch</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">click</span><span class="o">.</span><span class="n">format_filename</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>And what it does:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ touch hello.txt
+hello.txt
+
+$ touch missing.txt
+Usage: touch [OPTIONS] F
+
+Error: Invalid value for &quot;f&quot;: Path &quot;missing.txt&quot; does not exist.
+</pre></div>
+</div>
+</div>
+<div class="section" id="file-opening-safety">
+<h2>File Opening Safety<a class="headerlink" href="#file-opening-safety" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="xref py py-class docutils literal"><span class="pre">FileType</span></code> type has one problem it needs to deal with, and that
+is to decide when to open a file.  The default behavior is to be
+&#8220;intelligent&#8221; about it.  What this means is that it will open stdin/stdout
+and files opened for reading immediately.  This will give the user direct
+feedback when a file cannot be opened, but it will only open files
+for writing the first time an IO operation is performed by automatically
+wrapping the file in a special wrapper.</p>
+<p>This behavior can be forced by passing <code class="docutils literal"><span class="pre">lazy=True</span></code> or <code class="docutils literal"><span class="pre">lazy=False</span></code> to
+the constructor.  If the file is opened lazily, it will fail its first IO
+operation by raising an <a class="reference internal" href="api.html#click.FileError" title="click.FileError"><code class="xref py py-exc docutils literal"><span class="pre">FileError</span></code></a>.</p>
+<p>Since files opened for writing will typically immediately empty the file,
+the lazy mode should only be disabled if the developer is absolutely sure
+that this is intended behavior.</p>
+<p>Forcing lazy mode is also very useful to avoid resource handling
+confusion.  If a file is opened in lazy mode, it will receive a
+<code class="docutils literal"><span class="pre">close_intelligently</span></code> method that can help figure out if the file
+needs closing or not.  This is not needed for parameters, but is
+necessary for manually prompting with the <a class="reference internal" href="api.html#click.prompt" title="click.prompt"><code class="xref py py-func docutils literal"><span class="pre">prompt()</span></code></a> function as you
+do not know if a stream like stdout was opened (which was already open
+before) or a real file that needs closing.</p>
+<p>Starting with Click 2.0, it is also possible to open files in atomic mode by
+passing <code class="docutils literal"><span class="pre">atomic=True</span></code>.  In atomic mode, all writes go into a separate
+file in the same folder, and upon completion, the file will be moved over to
+the original location.  This is useful if a file regularly read by other
+users is modified.</p>
+</div>
+<div class="section" id="environment-variables">
+<h2>Environment Variables<a class="headerlink" href="#environment-variables" title="Permalink to this headline">¶</a></h2>
+<p>Like options, arguments can also grab values from an environment variable.
+Unlike options, however, this is only supported for explicitly named
+environment variables.</p>
+<p>Example usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.argument</span><span class="p">(</span><span class="s">&#39;src&#39;</span><span class="p">,</span> <span class="n">envvar</span><span class="o">=</span><span class="s">&#39;SRC&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s">&#39;r&#39;</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">echo</span><span class="p">(</span><span class="n">src</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>And from the command line:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ export SRC=hello.txt
+$ echo
+Hello World!
+</pre></div>
+</div>
+<p>In that case, it can also be a list of different environment variables
+where the first one is picked.</p>
+<p>Generally, this feature is not recommended because it can cause the user
+a lot of confusion.</p>
+</div>
+<div class="section" id="option-like-arguments">
+<h2>Option-Like Arguments<a class="headerlink" href="#option-like-arguments" title="Permalink to this headline">¶</a></h2>
+<p>Sometimes, you want to process arguments that look like options.  For
+instance, imagine you have a file named <code class="docutils literal"><span class="pre">-foo.txt</span></code>.  If you pass this as
+an argument in this manner, Click will treat it as an option.</p>
+<p>To solve this, Click does what any POSIX style command line script does,
+and that is to accept the string <code class="docutils literal"><span class="pre">--</span></code> as a separator for options and
+arguments.  After the <code class="docutils literal"><span class="pre">--</span></code> marker, all further parameters are accepted as
+arguments.</p>
+<p>Example usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.argument</span><span class="p">(</span><span class="s">&#39;files&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">Path</span><span class="p">())</span>
+<span class="k">def</span> <span class="nf">touch</span><span class="p">(</span><span class="n">files</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And from the command line:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ touch -- -foo.txt bar.txt
+-foo.txt
+bar.txt
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p class="logo"><a href="index.html">
+  <img class="logo" src="_static/click-small@2x.png" width="120" height="50" alt="Logo">
+</a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Arguments</a><ul>
+<li><a class="reference internal" href="#basic-arguments">Basic Arguments</a></li>
+<li><a class="reference internal" href="#variadic-arguments">Variadic Arguments</a></li>
+<li><a class="reference internal" href="#file-arguments">File Arguments</a></li>
+<li><a class="reference internal" href="#file-path-arguments">File Path Arguments</a></li>
+<li><a class="reference internal" href="#file-opening-safety">File Opening Safety</a></li>
+<li><a class="reference internal" href="#environment-variables">Environment Variables</a></li>
+<li><a class="reference internal" href="#option-like-arguments">Option-Like Arguments</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="options.html" title="previous chapter">Options</a></li>
+      <li>Next: <a href="commands.html" title="next chapter">Commands and Groups</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/arguments.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Armin Ronacher.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/arguments.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

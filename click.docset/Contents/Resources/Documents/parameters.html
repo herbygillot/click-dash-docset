@@ -1,0 +1,273 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Parameters &mdash; click</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="click" href="index.html" />
+    <link rel="next" title="Options" href="options.html" />
+    <link rel="prev" title="Setuptools Integration" href="setuptools.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="parameters">
+<h1>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h1>
+<p>Click supports two types of parameters for scripts: options and arguments.
+There is generally some confusion among authors of command line scripts of
+when to use which, so here is a quick overview of the differences.  As its
+name indicates, an option is optional.  While arguments can be optional
+within reason, they are much more restricted in how optional they can be.</p>
+<p>To help you decide between options and arguments, the recommendation is
+to use arguments exclusively for things like going to subcommands or input
+filenames / URLs, and have everything else be an option instead.</p>
+<div class="section" id="differences">
+<h2>Differences<a class="headerlink" href="#differences" title="Permalink to this headline">¶</a></h2>
+<p>Arguments can do less than options.  The following features are only
+available for options:</p>
+<ul class="simple">
+<li>automatic prompting for missing input</li>
+<li>act as flags (boolean or otherwise)</li>
+<li>option values can be pulled from environment variables, arguments can not</li>
+<li>options are fully documented in the help page, arguments are not
+(this is intentional as arguments might be too specific to be
+automatically documented)</li>
+</ul>
+<p>On the other hand arguments, unlike options, can accept an arbitrary number
+of arguments.  Options can strictly ever only accept a fixed number of
+arguments (defaults to 1).</p>
+</div>
+<div class="section" id="parameter-types">
+<h2>Parameter Types<a class="headerlink" href="#parameter-types" title="Permalink to this headline">¶</a></h2>
+<p>Parameters can be of different types.  Types can be implemented with
+different behavior and some are supported out of the box:</p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">str</span></code> / <a class="reference internal" href="api.html#click.STRING" title="click.STRING"><code class="xref py py-data docutils literal"><span class="pre">click.STRING</span></code></a>:</dt>
+<dd>The default parameter type which indicates unicode strings.</dd>
+<dt><code class="docutils literal"><span class="pre">int</span></code> / <a class="reference internal" href="api.html#click.INT" title="click.INT"><code class="xref py py-data docutils literal"><span class="pre">click.INT</span></code></a>:</dt>
+<dd>A parameter that only accepts integers.</dd>
+<dt><code class="docutils literal"><span class="pre">float</span></code> / <a class="reference internal" href="api.html#click.FLOAT" title="click.FLOAT"><code class="xref py py-data docutils literal"><span class="pre">click.FLOAT</span></code></a>:</dt>
+<dd>A parameter that only accepts floating point values.</dd>
+<dt><code class="docutils literal"><span class="pre">bool</span></code> / <a class="reference internal" href="api.html#click.BOOL" title="click.BOOL"><code class="xref py py-data docutils literal"><span class="pre">click.BOOL</span></code></a>:</dt>
+<dd>A parameter that accepts boolean values.  This is automatically used
+for boolean flags.  If used with string values <code class="docutils literal"><span class="pre">1</span></code>, <code class="docutils literal"><span class="pre">yes</span></code>, <code class="docutils literal"><span class="pre">y</span></code>
+and <code class="docutils literal"><span class="pre">true</span></code> convert to <cite>True</cite> and <code class="docutils literal"><span class="pre">0</span></code>, <code class="docutils literal"><span class="pre">no</span></code>, <code class="docutils literal"><span class="pre">n</span></code> and <code class="docutils literal"><span class="pre">false</span></code>
+convert to <cite>False</cite>.</dd>
+<dt><a class="reference internal" href="api.html#click.UUID" title="click.UUID"><code class="xref py py-data docutils literal"><span class="pre">click.UUID</span></code></a>:</dt>
+<dd>A parameter that accepts UUID values.  This is not automatically
+guessed but represented as <a class="reference external" href="http://docs.python.org/dev/library/uuid.html#uuid.UUID" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">uuid.UUID</span></code></a>.</dd>
+</dl>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">click.</code><code class="descname">File</code><span class="sig-paren">(</span><em>mode='r'</em>, <em>encoding=None</em>, <em>errors='strict'</em>, <em>lazy=None</em>, <em>atomic=False</em><span class="sig-paren">)</span></dt>
+<dd><p>Declares a parameter to be a file for reading or writing.  The file
+is automatically closed once the context tears down (after the command
+finished working).</p>
+<p>Files can be opened for reading or writing.  The special value <code class="docutils literal"><span class="pre">-</span></code>
+indicates stdin or stdout depending on the mode.</p>
+<p>By default, the file is opened for reading text data, but it can also be
+opened in binary mode or for writing.  The encoding parameter can be used
+to force a specific encoding.</p>
+<p>The <cite>lazy</cite> flag controls if the file should be opened immediately or
+upon first IO.  The default is to be non lazy for standard input and
+output streams as well as files opened for reading, lazy otherwise.</p>
+<p>Starting with Click 2.0, files can also be opened atomically in which
+case all writes go into a separate file in the same folder and upon
+completion the file will be moved over to the original location.  This
+is useful if a file regularly read by other users is modified.</p>
+<p>See <a class="reference internal" href="arguments.html#file-args"><span>File Arguments</span></a> for more information.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">click.</code><code class="descname">Path</code><span class="sig-paren">(</span><em>exists=False</em>, <em>file_okay=True</em>, <em>dir_okay=True</em>, <em>writable=False</em>, <em>readable=True</em>, <em>resolve_path=False</em><span class="sig-paren">)</span></dt>
+<dd><p>The path type is similar to the <a class="reference internal" href="api.html#click.File" title="click.File"><code class="xref py py-class docutils literal"><span class="pre">File</span></code></a> type but it performs
+different checks.  First of all, instead of returning an open file
+handle it returns just the filename.  Secondly, it can perform various
+basic checks about what the file or directory should be.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>exists</strong> &#8211; if set to true, the file or directory needs to exist for
+this value to be valid.  If this is not required and a
+file does indeed not exist, then all further checks are
+silently skipped.</li>
+<li><strong>file_okay</strong> &#8211; controls if a file is a possible value.</li>
+<li><strong>dir_okay</strong> &#8211; controls if a directory is a possible value.</li>
+<li><strong>writable</strong> &#8211; if true, a writable check is performed.</li>
+<li><strong>readable</strong> &#8211; if true, a readable check is performed.</li>
+<li><strong>resolve_path</strong> &#8211; if this is true, then the path is fully resolved
+before the value is passed onwards.  This means
+that it&#8217;s absolute and symlinks are resolved.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">click.</code><code class="descname">Choice</code><span class="sig-paren">(</span><em>choices</em><span class="sig-paren">)</span></dt>
+<dd><p>The choice type allows a value to be checked against a fixed set of
+supported values.  All of these values have to be strings.</p>
+<p>See <a class="reference internal" href="options.html#choice-opts"><span>Choice Options</span></a> for an example.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descclassname">click.</code><code class="descname">IntRange</code><span class="sig-paren">(</span><em>min=None</em>, <em>max=None</em>, <em>clamp=False</em><span class="sig-paren">)</span></dt>
+<dd><p>A parameter that works similar to <a class="reference internal" href="api.html#click.INT" title="click.INT"><code class="xref py py-data docutils literal"><span class="pre">click.INT</span></code></a> but restricts
+the value to fit into a range.  The default behavior is to fail if the
+value falls outside the range, but it can also be silently clamped
+between the two edges.</p>
+<p>See <a class="reference internal" href="options.html#ranges"><span>Range Options</span></a> for an example.</p>
+</dd></dl>
+
+<p>Custom parameter types can be implemented by subclassing
+<a class="reference internal" href="api.html#click.ParamType" title="click.ParamType"><code class="xref py py-class docutils literal"><span class="pre">click.ParamType</span></code></a>.  For simple cases, passing a Python function that
+fails with a <cite>ValueError</cite> is also supported, though discouraged.</p>
+</div>
+<div class="section" id="parameter-names">
+<h2>Parameter Names<a class="headerlink" href="#parameter-names" title="Permalink to this headline">¶</a></h2>
+<p>Parameters (both options and arguments) accept a number of positional
+arguments which are the parameter declarations.  Each string with a
+single dash is added as short argument; each string starting with a double
+dash as long one.  If a string is added without any dashes, it becomes the
+internal parameter name which is also used as variable name.</p>
+<p>If a parameter is not given a name without dashes, a name is generated
+automatically by taking the longest argument and converting all dashes to
+underscores.  For an option with <code class="docutils literal"><span class="pre">('-f',</span> <span class="pre">'--foo-bar')</span></code>, the parameter
+name is <cite>foo_bar</cite>.  For an option with <code class="docutils literal"><span class="pre">('-x',)</span></code>, the parameter is <cite>x</cite>.
+For an option with <code class="docutils literal"><span class="pre">('-f',</span> <span class="pre">'--filename',</span> <span class="pre">'dest')</span></code>, the parameter is
+called <cite>dest</cite>.</p>
+</div>
+<div class="section" id="implementing-custom-types">
+<h2>Implementing Custom Types<a class="headerlink" href="#implementing-custom-types" title="Permalink to this headline">¶</a></h2>
+<p>To implement a custom type, you need to subclass the <a class="reference internal" href="api.html#click.ParamType" title="click.ParamType"><code class="xref py py-class docutils literal"><span class="pre">ParamType</span></code></a>
+class.  Types can be invoked with or without context and parameter object,
+which is why they need to be able to deal with this.</p>
+<p>The following code implements an integer type that accepts hex and octal
+numbers in addition to normal integers, and converts them into regular
+integers:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">click</span>
+
+<span class="k">class</span> <span class="nc">BasedIntParamType</span><span class="p">(</span><span class="n">click</span><span class="o">.</span><span class="n">ParamType</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;integer&#39;</span>
+
+    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">value</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;0x&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">2</span><span class="p">:],</span> <span class="mi">16</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">value</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;0&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> is not a valid integer&#39;</span> <span class="o">%</span> <span class="n">value</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+
+<span class="n">BASED_INT</span> <span class="o">=</span> <span class="n">BasedIntParamType</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>As you can see, a subclass needs to implement the <a class="reference internal" href="api.html#click.ParamType.convert" title="click.ParamType.convert"><code class="xref py py-meth docutils literal"><span class="pre">ParamType.convert()</span></code></a>
+method and optionally provide the <a class="reference internal" href="api.html#click.ParamType.name" title="click.ParamType.name"><code class="xref py py-attr docutils literal"><span class="pre">ParamType.name</span></code></a> attribute.  The
+latter can be used for documentation purposes.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p class="logo"><a href="index.html">
+  <img class="logo" src="_static/click-small@2x.png" width="120" height="50" alt="Logo">
+</a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Parameters</a><ul>
+<li><a class="reference internal" href="#differences">Differences</a></li>
+<li><a class="reference internal" href="#parameter-types">Parameter Types</a></li>
+<li><a class="reference internal" href="#parameter-names">Parameter Names</a></li>
+<li><a class="reference internal" href="#implementing-custom-types">Implementing Custom Types</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="setuptools.html" title="previous chapter">Setuptools Integration</a></li>
+      <li>Next: <a href="options.html" title="next chapter">Options</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/parameters.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Armin Ronacher.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/parameters.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

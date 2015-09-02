@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Testing Click Applications &mdash; click</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="click" href="index.html" />
+    <link rel="next" title="Utilities" href="utils.html" />
+    <link rel="prev" title="Advanced Patterns" href="advanced.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="testing-click-applications">
+<h1>Testing Click Applications<a class="headerlink" href="#testing-click-applications" title="Permalink to this headline">¶</a></h1>
+<p>For basic testing, Click provides the <code class="xref py py-mod docutils literal"><span class="pre">click.testing</span></code> module which
+provides test functionality that helps you invoke command line
+applications and check their behavior.</p>
+<p>These tools should really only be used for testing as they change
+the entire interpreter state for simplicity and are not in any way
+thread-safe!</p>
+<div class="section" id="basic-testing">
+<h2>Basic Testing<a class="headerlink" href="#basic-testing" title="Permalink to this headline">¶</a></h2>
+<p>The basic functionality for testing Click applications is the
+<a class="reference internal" href="api.html#click.testing.CliRunner" title="click.testing.CliRunner"><code class="xref py py-class docutils literal"><span class="pre">CliRunner</span></code></a> which can invoke commands as command line scripts.  The
+<a class="reference internal" href="api.html#click.testing.CliRunner.invoke" title="click.testing.CliRunner.invoke"><code class="xref py py-meth docutils literal"><span class="pre">CliRunner.invoke()</span></code></a> method runs the command line script in isolation
+and captures the output as both bytes and binary data.</p>
+<p>The return value is a <a class="reference internal" href="api.html#click.testing.Result" title="click.testing.Result"><code class="xref py py-class docutils literal"><span class="pre">Result</span></code></a> object, which has the captured output
+data, exit code, and optional exception attached.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">from</span> <span class="nn">click.testing</span> <span class="kn">import</span> <span class="n">CliRunner</span>
+
+<span class="k">def</span> <span class="nf">test_hello_world</span><span class="p">():</span>
+    <span class="nd">@click.command</span><span class="p">()</span>
+    <span class="nd">@click.argument</span><span class="p">(</span><span class="s">&#39;name&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Hello </span><span class="si">%s</span><span class="s">!&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+
+    <span class="n">runner</span> <span class="o">=</span> <span class="n">CliRunner</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="n">hello</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;Peter&#39;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">output</span> <span class="o">==</span> <span class="s">&#39;Hello Peter!</span><span class="se">\n</span><span class="s">&#39;</span>
+</pre></div>
+</div>
+<p>For subcommand testing, a subcommand name must be specified in the <cite>args</cite> parameter of <a class="reference internal" href="api.html#click.testing.CliRunner.invoke" title="click.testing.CliRunner.invoke"><code class="xref py py-meth docutils literal"><span class="pre">CliRunner.invoke()</span></code></a> method.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">from</span> <span class="nn">click.testing</span> <span class="kn">import</span> <span class="n">CliRunner</span>
+
+<span class="k">def</span> <span class="nf">test_sync</span><span class="p">():</span>
+    <span class="nd">@click.group</span><span class="p">()</span>
+    <span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--debug/--no-debug&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">debug</span><span class="p">):</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Debug mode is </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;on&#39;</span> <span class="k">if</span> <span class="n">debug</span> <span class="k">else</span> <span class="s">&#39;off&#39;</span><span class="p">))</span>
+
+    <span class="nd">@cli.command</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">sync</span><span class="p">():</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Syncing&#39;</span><span class="p">)</span>
+
+    <span class="n">runner</span> <span class="o">=</span> <span class="n">CliRunner</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="n">cli</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;--debug&#39;</span><span class="p">,</span> <span class="s">&#39;sync&#39;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="k">assert</span> <span class="s">&#39;Debug mode is on&#39;</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">output</span>
+    <span class="k">assert</span> <span class="s">&#39;Syncing&#39;</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">output</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="file-system-isolation">
+<h2>File System Isolation<a class="headerlink" href="#file-system-isolation" title="Permalink to this headline">¶</a></h2>
+<p>For basic command line tools that want to operate with the file system, the
+<a class="reference internal" href="api.html#click.testing.CliRunner.isolated_filesystem" title="click.testing.CliRunner.isolated_filesystem"><code class="xref py py-meth docutils literal"><span class="pre">CliRunner.isolated_filesystem()</span></code></a> method comes in useful which sets up
+an empty folder and changes the current working directory to.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">from</span> <span class="nn">click.testing</span> <span class="kn">import</span> <span class="n">CliRunner</span>
+
+<span class="k">def</span> <span class="nf">test_cat</span><span class="p">():</span>
+    <span class="nd">@click.command</span><span class="p">()</span>
+    <span class="nd">@click.argument</span><span class="p">(</span><span class="s">&#39;f&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">File</span><span class="p">())</span>
+    <span class="k">def</span> <span class="nf">cat</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+
+    <span class="n">runner</span> <span class="o">=</span> <span class="n">CliRunner</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">runner</span><span class="o">.</span><span class="n">isolated_filesystem</span><span class="p">():</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;hello.txt&#39;</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;Hello World!&#39;</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="n">cat</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;hello.txt&#39;</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">output</span> <span class="o">==</span> <span class="s">&#39;Hello World!</span><span class="se">\n</span><span class="s">&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="input-streams">
+<h2>Input Streams<a class="headerlink" href="#input-streams" title="Permalink to this headline">¶</a></h2>
+<p>The test wrapper can also be used to provide input data for the input
+stream (stdin).  This is very useful for testing prompts, for instance:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">from</span> <span class="nn">click.testing</span> <span class="kn">import</span> <span class="n">CliRunner</span>
+
+<span class="k">def</span> <span class="nf">test_prompts</span><span class="p">():</span>
+    <span class="nd">@click.command</span><span class="p">()</span>
+    <span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--foo&#39;</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">foo</span><span class="p">):</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;foo=</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">foo</span><span class="p">)</span>
+
+    <span class="n">runner</span> <span class="o">=</span> <span class="n">CliRunner</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="s">&#39;wau wau</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">exception</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">output</span> <span class="o">==</span> <span class="s">&#39;Foo: wau wau</span><span class="se">\n</span><span class="s">foo=wau wau</span><span class="se">\n</span><span class="s">&#39;</span>
+</pre></div>
+</div>
+<p>Note that prompts will be emulated so that they write the input data to
+the output stream as well.  If hidden input is expected then this
+obviously does not happen.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p class="logo"><a href="index.html">
+  <img class="logo" src="_static/click-small@2x.png" width="120" height="50" alt="Logo">
+</a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Testing Click Applications</a><ul>
+<li><a class="reference internal" href="#basic-testing">Basic Testing</a></li>
+<li><a class="reference internal" href="#file-system-isolation">File System Isolation</a></li>
+<li><a class="reference internal" href="#input-streams">Input Streams</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="advanced.html" title="previous chapter">Advanced Patterns</a></li>
+      <li>Next: <a href="utils.html" title="next chapter">Utilities</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/testing.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Armin Ronacher.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/testing.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

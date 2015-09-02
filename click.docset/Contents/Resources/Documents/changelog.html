@@ -1,0 +1,381 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Click Changelog &mdash; click</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="click" href="index.html" />
+    <link rel="next" title="Upgrading To Newer Releases" href="upgrading.html" />
+    <link rel="prev" title="click-contrib" href="contrib.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="click-changelog">
+<h1>Click Changelog<a class="headerlink" href="#click-changelog" title="Permalink to this headline">¶</a></h1>
+<p>This contains all major version changes between Click releases.</p>
+<div class="section" id="version-5-1">
+<h2>Version 5.1<a class="headerlink" href="#version-5-1" title="Permalink to this headline">¶</a></h2>
+<p>(bugfix release, released on 17th August 2015)</p>
+<ul class="simple">
+<li>Fix a bug in <cite>pass_obj</cite> that would accidentally pass the context too.</li>
+</ul>
+</div>
+<div class="section" id="version-5-0">
+<h2>Version 5.0<a class="headerlink" href="#version-5-0" title="Permalink to this headline">¶</a></h2>
+<p>(codename &#8220;tok tok&#8221;, released on 16th August 2015)</p>
+<ul class="simple">
+<li>Removed various deprecated functionality.</li>
+<li>Atomic files now only accept the <cite>w</cite> mode.</li>
+<li>Change the usage part of help output for very long commands to wrap
+their arguments onto the next line, indented by 4 spaces.</li>
+<li>Fix a bug where return code and error messages were incorrect when
+using <code class="docutils literal"><span class="pre">CliRunner</span></code>.</li>
+<li>added <cite>get_current_context</cite>.</li>
+<li>added a <cite>meta</cite> dictionary to the context which is shared across the
+linked list of contexts to allow click utilities to place state there.</li>
+<li>introduced <cite>Context.scope</cite>.</li>
+<li>The <cite>echo</cite> function is now threadsafe: It calls the <cite>write</cite> method of the
+underlying object only once.</li>
+<li><cite>prompt(hide_input=True)</cite> now prints a newline on <cite>^C</cite>.</li>
+<li>Click will now warn if users are using <code class="docutils literal"><span class="pre">unicode_literals</span></code>.</li>
+<li>Click will now ignore the <code class="docutils literal"><span class="pre">PAGER</span></code> environment variable if it is empty or
+contains only whitespace.</li>
+<li>The <cite>click-contrib</cite> GitHub organization was created.</li>
+</ul>
+</div>
+<div class="section" id="version-4-1">
+<h2>Version 4.1<a class="headerlink" href="#version-4-1" title="Permalink to this headline">¶</a></h2>
+<p>(bugfix release, released on July 14th 2015)</p>
+<ul class="simple">
+<li>Fix a bug where error messages would include a trailing <cite>None</cite> string.</li>
+<li>Fix a bug where Click would crash on docstrings with trailing newlines.</li>
+<li>Support streams with encoding set to <cite>None</cite> on Python 3 by barfing with
+a better error.</li>
+<li>Handle ^C in less-pager properly.</li>
+<li>Handle return value of <cite>None</cite> from <cite>sys.getfilesystemencoding</cite></li>
+<li>Fix crash when writing to unicode files with <cite>click.echo</cite>.</li>
+<li>Fix type inference with multiple options.</li>
+</ul>
+</div>
+<div class="section" id="version-4-0">
+<h2>Version 4.0<a class="headerlink" href="#version-4-0" title="Permalink to this headline">¶</a></h2>
+<p>(codename &#8220;zoom zoom&#8221;, released on March 31st 2015)</p>
+<ul class="simple">
+<li>Added <cite>color</cite> parameters to lots of interfaces that directly or indirectly
+call into echoing.  This previously was always autodetection (with the
+exception of the <cite>echo_via_pager</cite> function).  Now you can forcefully
+enable or disable it, overriding the auto detection of Click.</li>
+<li>Added an <cite>UNPROCESSED</cite> type which does not perform any type changes which
+simplifies text handling on 2.x / 3.x in some special advanced usecases.</li>
+<li>Added <cite>NoSuchOption</cite> and <cite>BadOptionUsage</cite> exceptions for more generic
+handling of errors.</li>
+<li>Added support for handling of unprocessed options which can be useful in
+situations where arguments are forwarded to underlying tools.</li>
+<li>Added <cite>max_content_width</cite> parameter to the context which can be used to
+change the maximum width of help output.  By default Click will not format
+content for more than 80 characters width.</li>
+<li>Added support for writing prompts to stderr.</li>
+<li>Fix a bug when showing the default for multiple arguments.</li>
+<li>Added support for custom subclasses to <cite>option</cite> and <cite>argument</cite>.</li>
+<li>Fix bug in <code class="docutils literal"><span class="pre">clear()</span></code> on Windows when colorama is installed.</li>
+<li>Reject <code class="docutils literal"><span class="pre">nargs=-1</span></code> for options properly.  Options cannot be variadic.</li>
+<li>Fixed an issue with bash completion not working properly for commands with
+non ASCII characters or dashes.</li>
+<li>Added a way to manually update the progressbar.</li>
+<li>Changed the formatting of missing arguments.  Previously the internal
+argument name was shown in error messages, now the metavar is shown if
+passed.  In case an automated metavar is selected, it&#8217;s stripped of
+extra formatting first.</li>
+</ul>
+</div>
+<div class="section" id="version-3-3">
+<h2>Version 3.3<a class="headerlink" href="#version-3-3" title="Permalink to this headline">¶</a></h2>
+<p>(bugfix release, released on September 8th 2014)</p>
+<ul class="simple">
+<li>Fixed an issue with error reporting on Python 3 for invalid forwarding
+of commands.</li>
+</ul>
+</div>
+<div class="section" id="version-3-2">
+<h2>Version 3.2<a class="headerlink" href="#version-3-2" title="Permalink to this headline">¶</a></h2>
+<p>(bugfix release, released on August 22nd 2014)</p>
+<ul class="simple">
+<li>Added missing <cite>err</cite> parameter forwarding to the <cite>secho</cite> function.</li>
+<li>Fixed default parameters not being handled properly by the context
+invoke method.  This is a backwards incompatible change if the function
+was used improperly.  See <a class="reference internal" href="upgrading.html#upgrade-to-3-2"><span>Upgrading to 3.2</span></a> for more information.</li>
+<li>Removed the <cite>invoked_subcommands</cite> attribute largely.  It is not possible
+to provide it to work error free due to how the parsing works so this
+API has been deprecated.  See <a class="reference internal" href="upgrading.html#upgrade-to-3-2"><span>Upgrading to 3.2</span></a> for more information.</li>
+<li>Restored the functionality of <cite>invoked_subcommand</cite> which was broken as
+a regression in 3.1.</li>
+</ul>
+</div>
+<div class="section" id="version-3-1">
+<h2>Version 3.1<a class="headerlink" href="#version-3-1" title="Permalink to this headline">¶</a></h2>
+<p>(bugfix release, released on August 13th 2014)</p>
+<ul class="simple">
+<li>Fixed a regression that caused contexts of subcommands to be
+created before the parent command was invoked which was a
+regression from earlier Click versions.</li>
+</ul>
+</div>
+<div class="section" id="version-3-0">
+<h2>Version 3.0<a class="headerlink" href="#version-3-0" title="Permalink to this headline">¶</a></h2>
+<p>(codename &#8220;clonk clonk&#8221;, released on August 12th 2014)</p>
+<ul class="simple">
+<li>formatter now no longer attempts to accomodate for terminals
+smaller than 50 characters.  If that happens it just assumes
+a minimal width.</li>
+<li>added a way to not swallow exceptions in the test system.</li>
+<li>added better support for colors with pagers and ways to
+override the autodetection.</li>
+<li>the CLI runner&#8217;s result object now has a traceback attached.</li>
+<li>improved automatic short help detection to work better with
+dots that do not terminate sentences.</li>
+<li>when definining options without actual valid option strings
+now, Click will give an error message instead of silently
+passing.  This should catch situations where users wanted to
+created arguments instead of options.</li>
+<li>Restructured Click internally to support vendoring.</li>
+<li>Added support for multi command chaining.</li>
+<li>Added support for defaults on options with <cite>multiple</cite> and
+options and arguments with <cite>nargs != 1</cite>.</li>
+<li>label passed to <cite>progressbar</cite> is no longer rendered with
+whitespace stripped.</li>
+<li>added a way to disable the standalone mode of the <cite>main</cite>
+method on a Click command to be able to handle errors better.</li>
+<li>added support for returning values from command callbacks.</li>
+<li>added simplifications for printing to stderr from <cite>echo</cite>.</li>
+<li>added result callbacks for groups.</li>
+<li>entering a context multiple times defers the cleanup until
+the last exit occurs.</li>
+<li>added <cite>open_file</cite>.</li>
+</ul>
+</div>
+<div class="section" id="version-2-6">
+<h2>Version 2.6<a class="headerlink" href="#version-2-6" title="Permalink to this headline">¶</a></h2>
+<p>(bugfix release, released on August 11th 2014)</p>
+<ul class="simple">
+<li>Fixed an issue where the wrapped streams on Python 3 would be reporting
+incorrect values for seekable.</li>
+</ul>
+</div>
+<div class="section" id="version-2-5">
+<h2>Version 2.5<a class="headerlink" href="#version-2-5" title="Permalink to this headline">¶</a></h2>
+<p>(bugfix release, released on July 28th 2014)</p>
+<ul class="simple">
+<li>Fixed a bug with text wrapping on Python 3.</li>
+</ul>
+</div>
+<div class="section" id="version-2-4">
+<h2>Version 2.4<a class="headerlink" href="#version-2-4" title="Permalink to this headline">¶</a></h2>
+<p>(bugfix release, released on July 4th 2014)</p>
+<ul class="simple">
+<li>Corrected a bug in the change of the help option in 2.3.</li>
+</ul>
+</div>
+<div class="section" id="version-2-3">
+<h2>Version 2.3<a class="headerlink" href="#version-2-3" title="Permalink to this headline">¶</a></h2>
+<p>(bugfix release, released on July 3rd 2014)</p>
+<ul class="simple">
+<li>Fixed an incorrectly formatted help record for count options.&#8217;</li>
+<li>Add support for ansi code stripping on Windows if colorama
+is not available.</li>
+<li>restored the Click 1.0 handling of the help parameter for certain
+edge cases.</li>
+</ul>
+</div>
+<div class="section" id="version-2-2">
+<h2>Version 2.2<a class="headerlink" href="#version-2-2" title="Permalink to this headline">¶</a></h2>
+<p>(bugfix release, released on June 26th 2014)</p>
+<ul class="simple">
+<li>fixed tty detection on PyPy.</li>
+<li>fixed an issue that progress bars were not rendered when the
+context manager was entered.</li>
+</ul>
+</div>
+<div class="section" id="version-2-1">
+<h2>Version 2.1<a class="headerlink" href="#version-2-1" title="Permalink to this headline">¶</a></h2>
+<p>(bugfix release, released on June 14th 2014)</p>
+<ul class="simple">
+<li>fixed the <a class="reference internal" href="api.html#click.launch" title="click.launch"><code class="xref py py-func docutils literal"><span class="pre">launch()</span></code></a> function on windows.</li>
+<li>improved the colorama support on windows to try hard to not
+screw up the console if the application is interrupted.</li>
+<li>fixed windows terminals incorrectly being reported to be 80
+characters wide instead of 79</li>
+<li>use colorama win32 bindings if available to get the correct
+dimensions of a windows terminal.</li>
+<li>fixed an issue with custom function types on Python 3.</li>
+<li>fixed an issue with unknown options being incorrectly reported
+in error messages.</li>
+</ul>
+</div>
+<div class="section" id="version-2-0">
+<h2>Version 2.0<a class="headerlink" href="#version-2-0" title="Permalink to this headline">¶</a></h2>
+<p>(codename &#8220;tap tap tap&#8221;, released on June 6th 2014)</p>
+<ul class="simple">
+<li>added support for opening stdin/stdout on Windows in
+binary mode correctly.</li>
+<li>added support for atomic writes to files by going through
+a temporary file.</li>
+<li>introduced <a class="reference internal" href="api.html#click.BadParameter" title="click.BadParameter"><code class="xref py py-exc docutils literal"><span class="pre">BadParameter</span></code></a> which can be used to easily perform
+custom validation with the same error messages as in the type system.</li>
+<li>added <a class="reference internal" href="api.html#click.progressbar" title="click.progressbar"><code class="xref py py-func docutils literal"><span class="pre">progressbar()</span></code></a>; a function to show progress bars.</li>
+<li>added <a class="reference internal" href="api.html#click.get_app_dir" title="click.get_app_dir"><code class="xref py py-func docutils literal"><span class="pre">get_app_dir()</span></code></a>; a function to calculate the home folder
+for configs.</li>
+<li>Added transparent handling for ANSI codes into the <a class="reference internal" href="api.html#click.echo" title="click.echo"><code class="xref py py-func docutils literal"><span class="pre">echo()</span></code></a>
+function through <cite>colorama</cite>.</li>
+<li>Added <a class="reference internal" href="api.html#click.clear" title="click.clear"><code class="xref py py-func docutils literal"><span class="pre">clear()</span></code></a> function.</li>
+<li>Breaking change: parameter callbacks now get the parameter object
+passed as second argument.  There is legacy support for old callbacks
+which will warn but still execute the script.</li>
+<li>Added <a class="reference internal" href="api.html#click.style" title="click.style"><code class="xref py py-func docutils literal"><span class="pre">style()</span></code></a>, <a class="reference internal" href="api.html#click.unstyle" title="click.unstyle"><code class="xref py py-func docutils literal"><span class="pre">unstyle()</span></code></a> and <a class="reference internal" href="api.html#click.secho" title="click.secho"><code class="xref py py-func docutils literal"><span class="pre">secho()</span></code></a> for ANSI
+styles.</li>
+<li>Added an <a class="reference internal" href="api.html#click.edit" title="click.edit"><code class="xref py py-func docutils literal"><span class="pre">edit()</span></code></a> function that invokes the default editor.</li>
+<li>Added an <a class="reference internal" href="api.html#click.launch" title="click.launch"><code class="xref py py-func docutils literal"><span class="pre">launch()</span></code></a> function that launches browsers and applications.</li>
+<li>nargs of -1 for arguments can now be forced to be a single item through
+the required flag.  It defaults to not required.</li>
+<li>setting a default for arguments now implicitly makes it non required.</li>
+<li>changed &#8220;yN&#8221; / &#8220;Yn&#8221; to &#8220;y/N&#8221; and &#8220;Y/n&#8221; in confirmation prompts.</li>
+<li>added basic support for bash completion.</li>
+<li>added <a class="reference internal" href="api.html#click.getchar" title="click.getchar"><code class="xref py py-func docutils literal"><span class="pre">getchar()</span></code></a> to fetch a single character from the terminal.</li>
+<li>errors now go to stderr as intended.</li>
+<li>fixed various issues with more exotic parameter formats like DOS/Windows
+style arguments.</li>
+<li>added <a class="reference internal" href="api.html#click.pause" title="click.pause"><code class="xref py py-func docutils literal"><span class="pre">pause()</span></code></a> which works similar to the Windows <code class="docutils literal"><span class="pre">pause</span></code> cmd
+built-in but becomes an automatic noop if the application is not run
+through a terminal.</li>
+<li>added a bit of extra information about missing choice parameters.</li>
+<li>changed how the help function is implemented to allow global overriding
+of the help option.</li>
+<li>added support for token normalization to implement case insensitive handling.</li>
+<li>added support for providing defaults for context settings.</li>
+</ul>
+</div>
+<div class="section" id="version-1-1">
+<h2>Version 1.1<a class="headerlink" href="#version-1-1" title="Permalink to this headline">¶</a></h2>
+<p>(bugfix release, released on May 23rd 2014)</p>
+<ul class="simple">
+<li>fixed a bug that caused text files in Python 2 to not accept
+native strings.</li>
+</ul>
+</div>
+<div class="section" id="version-1-0">
+<h2>Version 1.0<a class="headerlink" href="#version-1-0" title="Permalink to this headline">¶</a></h2>
+<p>(no codename, released on May 21st 2014)</p>
+<ul class="simple">
+<li>Initial release.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p class="logo"><a href="index.html">
+  <img class="logo" src="_static/click-small@2x.png" width="120" height="50" alt="Logo">
+</a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Click Changelog</a><ul>
+<li><a class="reference internal" href="#version-5-1">Version 5.1</a></li>
+<li><a class="reference internal" href="#version-5-0">Version 5.0</a></li>
+<li><a class="reference internal" href="#version-4-1">Version 4.1</a></li>
+<li><a class="reference internal" href="#version-4-0">Version 4.0</a></li>
+<li><a class="reference internal" href="#version-3-3">Version 3.3</a></li>
+<li><a class="reference internal" href="#version-3-2">Version 3.2</a></li>
+<li><a class="reference internal" href="#version-3-1">Version 3.1</a></li>
+<li><a class="reference internal" href="#version-3-0">Version 3.0</a></li>
+<li><a class="reference internal" href="#version-2-6">Version 2.6</a></li>
+<li><a class="reference internal" href="#version-2-5">Version 2.5</a></li>
+<li><a class="reference internal" href="#version-2-4">Version 2.4</a></li>
+<li><a class="reference internal" href="#version-2-3">Version 2.3</a></li>
+<li><a class="reference internal" href="#version-2-2">Version 2.2</a></li>
+<li><a class="reference internal" href="#version-2-1">Version 2.1</a></li>
+<li><a class="reference internal" href="#version-2-0">Version 2.0</a></li>
+<li><a class="reference internal" href="#version-1-1">Version 1.1</a></li>
+<li><a class="reference internal" href="#version-1-0">Version 1.0</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="contrib.html" title="previous chapter">click-contrib</a></li>
+      <li>Next: <a href="upgrading.html" title="next chapter">Upgrading To Newer Releases</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/changelog.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Armin Ronacher.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/changelog.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

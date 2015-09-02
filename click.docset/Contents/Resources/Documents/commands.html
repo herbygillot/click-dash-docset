@@ -1,0 +1,614 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Commands and Groups &mdash; click</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="click" href="index.html" />
+    <link rel="next" title="User Input Prompts" href="prompts.html" />
+    <link rel="prev" title="Arguments" href="arguments.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="commands-and-groups">
+<h1>Commands and Groups<a class="headerlink" href="#commands-and-groups" title="Permalink to this headline">¶</a></h1>
+<p>The most important feature of Click is the concept of arbitrarily nesting
+command line utilities.  This is implemented through the <a class="reference internal" href="api.html#click.Command" title="click.Command"><code class="xref py py-class docutils literal"><span class="pre">Command</span></code></a>
+and <a class="reference internal" href="api.html#click.Group" title="click.Group"><code class="xref py py-class docutils literal"><span class="pre">Group</span></code></a> (actually <a class="reference internal" href="api.html#click.MultiCommand" title="click.MultiCommand"><code class="xref py py-class docutils literal"><span class="pre">MultiCommand</span></code></a>).</p>
+<div class="section" id="callback-invocation">
+<h2>Callback Invocation<a class="headerlink" href="#callback-invocation" title="Permalink to this headline">¶</a></h2>
+<p>For a regular command, the callback is executed whenever the command runs.
+If the script is the only command, it will always fire (unless a parameter
+callback prevents it.  This for instance happens if someone passes
+<code class="docutils literal"><span class="pre">--help</span></code> to the script).</p>
+<p>For groups and multi commands, the situation looks different.  In this case,
+the callback fires whenever a subcommand fires (unless this behavior is
+changed).  What this means in practice is that an outer command runs
+when an inner command runs:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.group</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--debug/--no-debug&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">debug</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Debug mode is </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;on&#39;</span> <span class="k">if</span> <span class="n">debug</span> <span class="k">else</span> <span class="s">&#39;off&#39;</span><span class="p">))</span>
+
+<span class="nd">@cli.command</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">sync</span><span class="p">():</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Synching&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here is what this looks like:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ tool.py
+Usage: tool.py [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --debug / --no-debug
+  --help                Show this message and exit.
+
+Commands:
+  sync
+
+$ tool.py --debug sync
+Debug mode is on
+Synching
+</pre></div>
+</div>
+</div>
+<div class="section" id="passing-parameters">
+<h2>Passing Parameters<a class="headerlink" href="#passing-parameters" title="Permalink to this headline">¶</a></h2>
+<p>Click strictly separates parameters between commands and subcommands. What this
+means is that options and arguments for a specific command have to be specified
+<em>after</em> the command name itself, but <em>before</em> any other command names.</p>
+<p>This behavior is already observable with the predefined <code class="docutils literal"><span class="pre">--help</span></code> option.
+Suppose we have a program called <code class="docutils literal"><span class="pre">tool.py</span></code>, containing a subcommand called
+<code class="docutils literal"><span class="pre">sub</span></code>.</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">tool.py</span> <span class="pre">--help</span></code> will return the help for the whole program (listing
+subcommands).</li>
+<li><code class="docutils literal"><span class="pre">tool.py</span> <span class="pre">sub</span> <span class="pre">--help</span></code> will return the help for the <code class="docutils literal"><span class="pre">sub</span></code> subcommand.</li>
+<li>But <code class="docutils literal"><span class="pre">tool.py</span> <span class="pre">--help</span> <span class="pre">sub</span></code> will treat <code class="docutils literal"><span class="pre">--help</span></code> as an argument for the main
+program. Click then invokes the callback for <code class="docutils literal"><span class="pre">--help</span></code>, which prints the
+help and aborts the program before click can process the subcommand.</li>
+</ul>
+</div>
+<div class="section" id="nested-handling-and-contexts">
+<h2>Nested Handling and Contexts<a class="headerlink" href="#nested-handling-and-contexts" title="Permalink to this headline">¶</a></h2>
+<p>As you can see from the earlier example, the basic command group accepts a
+debug argument which is passed to its callback, but not to the sync
+command itself.  The sync command only accepts its own arguments.</p>
+<p>This allows tools to act completely independent of each other, but how
+does one command talk to a nested one?  The answer to this is the
+<a class="reference internal" href="api.html#click.Context" title="click.Context"><code class="xref py py-class docutils literal"><span class="pre">Context</span></code></a>.</p>
+<p>Each time a command is invoked, a new context is created and linked with the
+parent context.  Normally, you can&#8217;t see these contexts, but they are
+there.  Contexts are passed to parameter callbacks together with the
+value automatically.  Commands can also ask for the context to be passed
+by marking themselves with the <a class="reference internal" href="api.html#click.pass_context" title="click.pass_context"><code class="xref py py-func docutils literal"><span class="pre">pass_context()</span></code></a> decorator.  In that
+case, the context is passed as first argument.</p>
+<p>The context can also carry a program specified object that can be
+used for the program&#8217;s purposes.  What this means is that you can build a
+script like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.group</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--debug/--no-debug&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="nd">@click.pass_context</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">debug</span><span class="p">):</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">obj</span><span class="p">[</span><span class="s">&#39;DEBUG&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">debug</span>
+
+<span class="nd">@cli.command</span><span class="p">()</span>
+<span class="nd">@click.pass_context</span>
+<span class="k">def</span> <span class="nf">sync</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Debug is </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">obj</span><span class="p">[</span><span class="s">&#39;DEBUG&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="s">&#39;on&#39;</span> <span class="ow">or</span> <span class="s">&#39;off&#39;</span><span class="p">))</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">cli</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="p">{})</span>
+</pre></div>
+</div>
+<p>If the object is provided, each context will pass the object onwards to
+its children, but at any level a context&#8217;s object can be overridden.  To
+reach to a parent, <code class="docutils literal"><span class="pre">context.parent</span></code> can be used.</p>
+<p>In addition to that, instead of passing an object down, nothing stops the
+application from modifying global state.  For instance, you could just flip
+a global <code class="docutils literal"><span class="pre">DEBUG</span></code> variable and be done with it.</p>
+</div>
+<div class="section" id="decorating-commands">
+<h2>Decorating Commands<a class="headerlink" href="#decorating-commands" title="Permalink to this headline">¶</a></h2>
+<p>As you have seen in the earlier example, a decorator can change how a
+command is invoked.  What actually happens behind the scenes is that
+callbacks are always invoked through the <a class="reference internal" href="api.html#click.Context.invoke" title="click.Context.invoke"><code class="xref py py-meth docutils literal"><span class="pre">Context.invoke()</span></code></a> method
+which automatically invokes a command correctly (by either passing the
+context or not).</p>
+<p>This is very useful when you want to write custom decorators.  For
+instance, a common pattern would be to configure an object representing
+state and then storing it on the context and then to use a custom
+decorator to find the most recent object of this sort and pass it as first
+argument.</p>
+<p>For instance, the <a class="reference internal" href="api.html#click.pass_obj" title="click.pass_obj"><code class="xref py py-func docutils literal"><span class="pre">pass_obj()</span></code></a> decorator can be implemented like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">update_wrapper</span>
+
+<span class="k">def</span> <span class="nf">pass_obj</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="nd">@click.pass_context</span>
+    <span class="k">def</span> <span class="nf">new_func</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ctx</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">obj</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">update_wrapper</span><span class="p">(</span><span class="n">new_func</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <a class="reference internal" href="api.html#click.Context.invoke" title="click.Context.invoke"><code class="xref py py-meth docutils literal"><span class="pre">Context.invoke()</span></code></a> command will automatically invoke the function
+in the correct way, so the function will either be called with <code class="docutils literal"><span class="pre">f(ctx,</span>
+<span class="pre">obj)</span></code> or <code class="docutils literal"><span class="pre">f(obj)</span></code> depending on whether or not it itself is decorated with
+<a class="reference internal" href="api.html#click.pass_context" title="click.pass_context"><code class="xref py py-func docutils literal"><span class="pre">pass_context()</span></code></a>.</p>
+<p>This is a very powerful concept that can be used to build very complex
+nested applications; see <a class="reference internal" href="complex.html#complex-guide"><span>Complex Applications</span></a> for more information.</p>
+</div>
+<div class="section" id="group-invocation-without-command">
+<h2>Group Invocation Without Command<a class="headerlink" href="#group-invocation-without-command" title="Permalink to this headline">¶</a></h2>
+<p>By default, a group or multi command is not invoked unless a subcommand is
+passed.  In fact, not providing a command automatically passes <code class="docutils literal"><span class="pre">--help</span></code>
+by default.  This behavior can be changed by passing
+<code class="docutils literal"><span class="pre">invoke_without_command=True</span></code> to a group.  In that case, the callback is
+always invoked instead of showing the help page.  The context object also
+includes information about whether or not the invocation would go to a
+subcommand.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.group</span><span class="p">(</span><span class="n">invoke_without_command</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="nd">@click.pass_context</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">ctx</span><span class="o">.</span><span class="n">invoked_subcommand</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;I was invoked without subcommand&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;I am about to invoke </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">ctx</span><span class="o">.</span><span class="n">invoked_subcommand</span><span class="p">)</span>
+
+<span class="nd">@cli.command</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">sync</span><span class="p">():</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;The subcommand&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And how it works in practice:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ tool
+I was invoked without subcommand
+$ tool sync
+I am about to invoke sync
+The subcommand
+</pre></div>
+</div>
+</div>
+<div class="section" id="custom-multi-commands">
+<span id="id1"></span><h2>Custom Multi Commands<a class="headerlink" href="#custom-multi-commands" title="Permalink to this headline">¶</a></h2>
+<p>In addition to using <a class="reference internal" href="api.html#click.group" title="click.group"><code class="xref py py-func docutils literal"><span class="pre">click.group()</span></code></a>, you can also build your own
+custom multi commands.  This is useful when you want to support commands
+being loaded lazily from plugins.</p>
+<p>A custom multi command just needs to implement a list and load method:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="n">plugin_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">),</span> <span class="s">&#39;commands&#39;</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">MyCLI</span><span class="p">(</span><span class="n">click</span><span class="o">.</span><span class="n">MultiCommand</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">list_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">plugin_folder</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;.py&#39;</span><span class="p">):</span>
+                <span class="n">rv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">rv</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">rv</span>
+
+    <span class="k">def</span> <span class="nf">get_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">ns</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">plugin_folder</span><span class="p">,</span> <span class="n">name</span> <span class="o">+</span> <span class="s">&#39;.py&#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">code</span> <span class="o">=</span> <span class="nb">compile</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span> <span class="n">fn</span><span class="p">,</span> <span class="s">&#39;exec&#39;</span><span class="p">)</span>
+            <span class="nb">eval</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">ns</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ns</span><span class="p">[</span><span class="s">&#39;cli&#39;</span><span class="p">]</span>
+
+<span class="n">cli</span> <span class="o">=</span> <span class="n">MyCLI</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s">&#39;This tool</span><span class="se">\&#39;</span><span class="s">s subcommands are loaded from a &#39;</span>
+            <span class="s">&#39;plugin folder dynamically.&#39;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">cli</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>These custom classes can also be used with decorators:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">(</span><span class="n">cls</span><span class="o">=</span><span class="n">MyCLI</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">():</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="merging-multi-commands">
+<h2>Merging Multi Commands<a class="headerlink" href="#merging-multi-commands" title="Permalink to this headline">¶</a></h2>
+<p>In addition to implementing custom multi commands, it can also be
+interesting to merge multiple together into one script.  While this is
+generally not as recommended as it nests one below the other, the merging
+approach can be useful in some circumstances for a nicer shell experience.</p>
+<p>The default implementation for such a merging system is the
+<a class="reference internal" href="api.html#click.CommandCollection" title="click.CommandCollection"><code class="xref py py-class docutils literal"><span class="pre">CommandCollection</span></code></a> class.  It accepts a list of other multi
+commands and makes the commands available on the same level.</p>
+<p>Example usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">click</span>
+
+<span class="nd">@click.group</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">cli1</span><span class="p">():</span>
+    <span class="k">pass</span>
+
+<span class="nd">@cli1.command</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">cmd1</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Command on cli1&quot;&quot;&quot;</span>
+
+<span class="nd">@click.group</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">cli2</span><span class="p">():</span>
+    <span class="k">pass</span>
+
+<span class="nd">@cli2.command</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">cmd2</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Command on cli2&quot;&quot;&quot;</span>
+
+<span class="n">cli</span> <span class="o">=</span> <span class="n">click</span><span class="o">.</span><span class="n">CommandCollection</span><span class="p">(</span><span class="n">sources</span><span class="o">=</span><span class="p">[</span><span class="n">cli1</span><span class="p">,</span> <span class="n">cli2</span><span class="p">])</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">cli</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>And what it looks like:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ cli --help
+Usage: cli [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  cmd1  Command on cli1
+  cmd2  Command on cli2
+</pre></div>
+</div>
+<p>In case a command exists in more than one source, the first source wins.</p>
+</div>
+<div class="section" id="multi-command-chaining">
+<span id="id2"></span><h2>Multi Command Chaining<a class="headerlink" href="#multi-command-chaining" title="Permalink to this headline">¶</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 3.0.</span></p>
+</div>
+<p>Sometimes it is useful to be allowed to invoke more than one subcommand in
+one go.  For instance if you have installed a setuptools package before
+you might be familiar with the <code class="docutils literal"><span class="pre">setup.py</span> <span class="pre">sdist</span> <span class="pre">bdist_wheel</span> <span class="pre">upload</span></code>
+command chain which invokes <code class="docutils literal"><span class="pre">dist</span></code> before <code class="docutils literal"><span class="pre">bdist_wheel</span></code> before
+<code class="docutils literal"><span class="pre">upload</span></code>.  Starting with Click 3.0 this is very simple to implement.
+All you have to do is to pass <code class="docutils literal"><span class="pre">chain=True</span></code> to your multicommand:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.group</span><span class="p">(</span><span class="n">chain</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">():</span>
+    <span class="k">pass</span>
+
+
+<span class="nd">@cli.command</span><span class="p">(</span><span class="s">&#39;sdist&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">sdist</span><span class="p">():</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;sdist called&#39;</span><span class="p">)</span>
+
+
+<span class="nd">@cli.command</span><span class="p">(</span><span class="s">&#39;bdist_wheel&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">bdist_wheel</span><span class="p">():</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;bdist_wheel called&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now you can invoke it like this:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ setup.py sdist bdist_wheel
+sdist called
+bdist_wheel called
+</pre></div>
+</div>
+<p>When using multi command chaining you can only have one command (the last)
+use <code class="docutils literal"><span class="pre">nargs=-1</span></code> on an argument.  Other than that there are no
+restrictions on how they work.  They can accept options and arguments as
+normal.</p>
+<p>Another note: the <a class="reference internal" href="api.html#click.Context.invoked_subcommand" title="click.Context.invoked_subcommand"><code class="xref py py-attr docutils literal"><span class="pre">Context.invoked_subcommand</span></code></a> attribute is a bit
+useless for multi commands as it will give <code class="docutils literal"><span class="pre">'*'</span></code> as value if more than
+one command is invoked.  This is necessary because the handling of
+subcommands happens one after another so the exact subcommands that will
+be handled are not yet available when the callback fires.</p>
+</div>
+<div class="section" id="multi-command-pipelines">
+<h2>Multi Command Pipelines<a class="headerlink" href="#multi-command-pipelines" title="Permalink to this headline">¶</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 3.0.</span></p>
+</div>
+<p>A very common usecase of multi command chaining is to have one command
+process the result of the previous command.  There are various ways in
+which this can be facilitated.  The most obvious way is to store a value
+on the context object and process it from function to function.  This
+works by decorating a function with <a class="reference internal" href="api.html#click.pass_context" title="click.pass_context"><code class="xref py py-func docutils literal"><span class="pre">pass_context()</span></code></a> after which the
+context object is provided and a subcommand can store its data there.</p>
+<p>Another way to accomplish this is to setup pipelines by returning
+processing functions.  Think of it like this: when a subcommand gets
+invoked it processes all of its parameters and comes up with a plan of
+how to do its processing.  At that point it then returns a processing
+function and returns.</p>
+<p>Where do the returned functions go?  The chained multicommand can register
+a callback with <a class="reference internal" href="api.html#click.MultiCommand.resultcallback" title="click.MultiCommand.resultcallback"><code class="xref py py-meth docutils literal"><span class="pre">MultiCommand.resultcallback()</span></code></a> that goes over all
+these functions and then invoke them.</p>
+<p>To make this a bit more concrete consider this example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.group</span><span class="p">(</span><span class="n">chain</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">invoke_without_command</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;-i&#39;</span><span class="p">,</span> <span class="s">&#39;--input&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s">&#39;r&#39;</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="nd">@cli.resultcallback</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">process_pipeline</span><span class="p">(</span><span class="n">processors</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+    <span class="n">iterator</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\r\n</span><span class="s">&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">input</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">processor</span> <span class="ow">in</span> <span class="n">processors</span><span class="p">:</span>
+        <span class="n">iterator</span> <span class="o">=</span> <span class="n">processor</span><span class="p">(</span><span class="n">iterator</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+<span class="nd">@cli.command</span><span class="p">(</span><span class="s">&#39;uppercase&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">make_uppercase</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">processor</span><span class="p">(</span><span class="n">iterator</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">line</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">processor</span>
+
+<span class="nd">@cli.command</span><span class="p">(</span><span class="s">&#39;lowercase&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">make_lowercase</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">processor</span><span class="p">(</span><span class="n">iterator</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">processor</span>
+
+<span class="nd">@cli.command</span><span class="p">(</span><span class="s">&#39;strip&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">make_strip</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">processor</span><span class="p">(</span><span class="n">iterator</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">processor</span>
+</pre></div>
+</div>
+<p>That&#8217;s a lot in one go, so let&#8217;s go through it step by step.</p>
+<ol class="arabic simple">
+<li>The first thing is to make a <a class="reference internal" href="api.html#click.group" title="click.group"><code class="xref py py-func docutils literal"><span class="pre">group()</span></code></a> that is chainable.  In
+addition to that we also instruct Click to invoke even if no
+subcommand is defined.  If this would not be done, then invoking an
+empty pipeline would produce the help page instead of running the
+result callbacks.</li>
+<li>The next thing we do is to register a result callback on our group.
+This callback will be invoked with an argument which is the list of
+all return values of all subcommands and then the same keyword
+parameters as our group itself.  This means we can access the input
+file easily there without having to use the context object.</li>
+<li>In this result callback we create an iterator of all the lines in the
+input file and then pass this iterator through all the returned
+callbacks from all subcommands and finally we print all lines to
+stdout.</li>
+</ol>
+<p>After that point we can register as many subcommands as we want and each
+subcommand can return a processor function to modify the stream of lines.</p>
+<p>One important thing of note is that Click shuts down the context after
+each callback has been run.  This means that for instance file types
+cannot be accessed in the <cite>processor</cite> functions as the files will already
+be closed there.  This limitation is unlikely to change because it would
+make resource handling much more complicated.  For such it&#8217;s recommended
+to not use the file type and manually open the file through
+<a class="reference internal" href="api.html#click.open_file" title="click.open_file"><code class="xref py py-func docutils literal"><span class="pre">open_file()</span></code></a>.</p>
+<p>For a more complex example that also improves upon handling of the
+pipelines have a look at the <a class="reference external" href="https://github.com/mitsuhiko/click/tree/master/examples/imagepipe">imagepipe multi command chaining demo</a> in
+the Click repository.  It implements a pipeline based image editing tool
+that has a nice internal structure for the pipelines.</p>
+</div>
+<div class="section" id="overriding-defaults">
+<h2>Overriding Defaults<a class="headerlink" href="#overriding-defaults" title="Permalink to this headline">¶</a></h2>
+<p>By default, the default value for a parameter is pulled from the
+<code class="docutils literal"><span class="pre">default</span></code> flag that is provided when it&#8217;s defined, but that&#8217;s not the
+only place defaults can be loaded from.  The other place is the
+<code class="xref py py-attr docutils literal"><span class="pre">Context.default_map</span></code> (a dictionary) on the context.  This allows
+defaults to be loaded from a configuration file to override the regular
+defaults.</p>
+<p>This is useful if you plug in some commands from another package but
+you&#8217;re not satisfied with the defaults.</p>
+<p>The default map can be nested arbitrarily for each subcommand and
+provided when the script is invoked.  Alternatively, it can also be
+overriden at any point by commands.  For instance, a top-level command could
+load the defaults from a configuration file.</p>
+<p>Example usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">click</span>
+
+<span class="nd">@click.group</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">():</span>
+    <span class="k">pass</span>
+
+<span class="nd">@cli.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--port&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">8000</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">runserver</span><span class="p">(</span><span class="n">port</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Serving on http://127.0.0.1:</span><span class="si">%d</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">port</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">cli</span><span class="p">(</span><span class="n">default_map</span><span class="o">=</span><span class="p">{</span>
+        <span class="s">&#39;runserver&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;port&#39;</span><span class="p">:</span> <span class="mi">5000</span>
+        <span class="p">}</span>
+    <span class="p">})</span>
+</pre></div>
+</div>
+<p>And in action:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ cli runserver
+Serving on http://127.0.0.1:5000/
+</pre></div>
+</div>
+</div>
+<div class="section" id="context-defaults">
+<h2>Context Defaults<a class="headerlink" href="#context-defaults" title="Permalink to this headline">¶</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2.0.</span></p>
+</div>
+<p>Starting with Click 2.0 you can override defaults for contexts not just
+when calling your script, but also in the decorator that declares a
+command.  For instance given the previous example which defines a custom
+<code class="docutils literal"><span class="pre">default_map</span></code> this can also be accomplished in the decorator now.</p>
+<p>This example does the same as the previous example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">click</span>
+
+<span class="n">CONTEXT_SETTINGS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">default_map</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;runserver&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;port&#39;</span><span class="p">:</span> <span class="mi">5000</span><span class="p">}}</span>
+<span class="p">)</span>
+
+<span class="nd">@click.group</span><span class="p">(</span><span class="n">context_settings</span><span class="o">=</span><span class="n">CONTEXT_SETTINGS</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">():</span>
+    <span class="k">pass</span>
+
+<span class="nd">@cli.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--port&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">8000</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">runserver</span><span class="p">(</span><span class="n">port</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Serving on http://127.0.0.1:</span><span class="si">%d</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">port</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">cli</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>And again the example in action:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ cli runserver
+Serving on http://127.0.0.1:5000/
+</pre></div>
+</div>
+</div>
+<div class="section" id="command-return-values">
+<h2>Command Return Values<a class="headerlink" href="#command-return-values" title="Permalink to this headline">¶</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 3.0.</span></p>
+</div>
+<p>One of the new introductions in Click 3.0 is the full support for return
+values from command callbacks.  This enables a whole range of features
+that were previously hard to implement.</p>
+<p>In essence any command callback can now return a value.  This return value
+is bubbled to certain receivers.  One usecase for this has already been
+show in the example of <a class="reference internal" href="#multi-command-chaining"><span>Multi Command Chaining</span></a> where it has been
+demonstrated that chained multi commands can have callbacks that process
+all return values.</p>
+<p>When working with command return values in Click, this is what you need to
+know:</p>
+<ul class="simple">
+<li>The return value of a command callback is generally returned from the
+<a class="reference internal" href="api.html#click.BaseCommand.invoke" title="click.BaseCommand.invoke"><code class="xref py py-meth docutils literal"><span class="pre">BaseCommand.invoke()</span></code></a> method.  The exception to this rule has to
+do with <a class="reference internal" href="api.html#click.Group" title="click.Group"><code class="xref py py-class docutils literal"><span class="pre">Group</span></code></a>s:<ul>
+<li>In a group the return value is generally the return value of the
+subcommand invoked.  The only exception to this rule is that the
+return value is the return value of the group callback if it&#8217;s
+invoked without arguments and <cite>invoke_without_command</cite> is enabled.</li>
+<li>If a group is set up for chaining then the return value is a list
+of all subcommands&#8217; results.</li>
+<li>Return values of groups can be processed through a
+<a class="reference internal" href="api.html#click.MultiCommand.result_callback" title="click.MultiCommand.result_callback"><code class="xref py py-attr docutils literal"><span class="pre">MultiCommand.result_callback</span></code></a>.  This is invoked with the
+list of all return values in chain mode, or the single return
+value in case of non chained commands.</li>
+</ul>
+</li>
+<li>The return value is bubbled through from the <a class="reference internal" href="api.html#click.Context.invoke" title="click.Context.invoke"><code class="xref py py-meth docutils literal"><span class="pre">Context.invoke()</span></code></a>
+and <a class="reference internal" href="api.html#click.Context.forward" title="click.Context.forward"><code class="xref py py-meth docutils literal"><span class="pre">Context.forward()</span></code></a> methods.  This is useful in situations
+where you internally want to call into another command.</li>
+<li>Click does not have any hard requirements for the return values and
+does not use them itself.  This allows return values to be used for
+custom decorators or workflows (like in the multi command chaining
+example).</li>
+<li>When a Click script is invoked as command line application (through
+<a class="reference internal" href="api.html#click.BaseCommand.main" title="click.BaseCommand.main"><code class="xref py py-meth docutils literal"><span class="pre">BaseCommand.main()</span></code></a>) the return value is ignored unless the
+<cite>standalone_mode</cite> is disabled in which case it&#8217;s bubbled through.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p class="logo"><a href="index.html">
+  <img class="logo" src="_static/click-small@2x.png" width="120" height="50" alt="Logo">
+</a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Commands and Groups</a><ul>
+<li><a class="reference internal" href="#callback-invocation">Callback Invocation</a></li>
+<li><a class="reference internal" href="#passing-parameters">Passing Parameters</a></li>
+<li><a class="reference internal" href="#nested-handling-and-contexts">Nested Handling and Contexts</a></li>
+<li><a class="reference internal" href="#decorating-commands">Decorating Commands</a></li>
+<li><a class="reference internal" href="#group-invocation-without-command">Group Invocation Without Command</a></li>
+<li><a class="reference internal" href="#custom-multi-commands">Custom Multi Commands</a></li>
+<li><a class="reference internal" href="#merging-multi-commands">Merging Multi Commands</a></li>
+<li><a class="reference internal" href="#multi-command-chaining">Multi Command Chaining</a></li>
+<li><a class="reference internal" href="#multi-command-pipelines">Multi Command Pipelines</a></li>
+<li><a class="reference internal" href="#overriding-defaults">Overriding Defaults</a></li>
+<li><a class="reference internal" href="#context-defaults">Context Defaults</a></li>
+<li><a class="reference internal" href="#command-return-values">Command Return Values</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="arguments.html" title="previous chapter">Arguments</a></li>
+      <li>Next: <a href="prompts.html" title="next chapter">User Input Prompts</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/commands.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Armin Ronacher.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/commands.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

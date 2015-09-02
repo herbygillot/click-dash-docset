@@ -1,0 +1,721 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Options &mdash; click</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="click" href="index.html" />
+    <link rel="next" title="Arguments" href="arguments.html" />
+    <link rel="prev" title="Parameters" href="parameters.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="options">
+<span id="id1"></span><h1>Options<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h1>
+<p>Adding options to commands can be accomplished by the <a class="reference internal" href="api.html#click.option" title="click.option"><code class="xref py py-func docutils literal"><span class="pre">option()</span></code></a>
+decorator.  Since options can come in various different versions, there
+are a ton of parameters to configure their behavior. Options in click are
+distinct from <a class="reference internal" href="arguments.html#arguments"><span>positional arguments</span></a>.</p>
+<div class="section" id="basic-value-options">
+<h2>Basic Value Options<a class="headerlink" href="#basic-value-options" title="Permalink to this headline">¶</a></h2>
+<p>The most basic option is a value option.  These options accept one
+argument which is a value.  If no type is provided, the type of the default
+value is used.  If no default value is provided, the type is assumed to be
+<a class="reference internal" href="api.html#click.STRING" title="click.STRING"><code class="xref py py-data docutils literal"><span class="pre">STRING</span></code></a>.  By default, the name of the parameter is the first long
+option defined; otherwise the first short one is used.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--n&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">dots</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;.&#39;</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And on the command line:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ dots --n=2
+..
+</pre></div>
+</div>
+<p>In this case the option is of type <a class="reference internal" href="api.html#click.INT" title="click.INT"><code class="xref py py-data docutils literal"><span class="pre">INT</span></code></a> because the default value
+is an integer.</p>
+</div>
+<div class="section" id="multi-value-options">
+<h2>Multi Value Options<a class="headerlink" href="#multi-value-options" title="Permalink to this headline">¶</a></h2>
+<p>Sometimes, you have options that take more than one argument.  For options,
+only a fixed number of arguments is supported.  This can be configured by
+the <code class="docutils literal"><span class="pre">nargs</span></code> parameter.  The values are then stored as a tuple.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--pos&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">findme</span><span class="p">(</span><span class="n">pos</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> / </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">pos</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And on the command line:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ findme --pos 2.0 3.0
+2.0 / 3.0
+</pre></div>
+</div>
+</div>
+<div class="section" id="tuples-as-multi-value-options">
+<span id="tuple-type"></span><h2>Tuples as Multi Value Options<a class="headerlink" href="#tuples-as-multi-value-options" title="Permalink to this headline">¶</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 4.0.</span></p>
+</div>
+<p>As you can see that by using <cite>nargs</cite> set to a specific number each item in
+the resulting tuple is of the same type.  This might not be what you want.
+Commonly you might want to use different types for different indexes in
+the tuple.  For this you can directly specify a tuple as type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--item&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="p">(</span><span class="nb">unicode</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">putitem</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;name=</span><span class="si">%s</span><span class="s"> id=</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">item</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And on the command line:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ putitem --item peter 1338
+name=peter id=1338
+</pre></div>
+</div>
+<p>By using a tuple literal as type, <cite>nargs</cite> gets automatically set to the
+length of the tuple and the <a class="reference internal" href="api.html#click.Tuple" title="click.Tuple"><code class="xref py py-class docutils literal"><span class="pre">click.Tuple</span></code></a> type is automatically
+used.  The above example is thus equivalent to this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--item&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">Tuple</span><span class="p">([</span><span class="nb">unicode</span><span class="p">,</span> <span class="nb">int</span><span class="p">]))</span>
+<span class="k">def</span> <span class="nf">putitem</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;name=</span><span class="si">%s</span><span class="s"> id=</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">item</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="multiple-options">
+<h2>Multiple Options<a class="headerlink" href="#multiple-options" title="Permalink to this headline">¶</a></h2>
+<p>Similarly to <code class="docutils literal"><span class="pre">nargs</span></code>, there is also the case of wanting to support a
+parameter being provided multiple times to and have all values recorded &#8211;
+not just the last one.  For instance, <code class="docutils literal"><span class="pre">git</span> <span class="pre">commit</span> <span class="pre">-m</span> <span class="pre">foo</span> <span class="pre">-m</span> <span class="pre">bar</span></code> would
+record two lines for the commit message: <code class="docutils literal"><span class="pre">foo</span></code> and <code class="docutils literal"><span class="pre">bar</span></code>. This can be
+accomplished with the <code class="docutils literal"><span class="pre">multiple</span></code> flag:</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--message&#39;</span><span class="p">,</span> <span class="s">&#39;-m&#39;</span><span class="p">,</span> <span class="n">multiple</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">commit</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">message</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>And on the command line:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ commit -m foo -m bar
+foo
+bar
+</pre></div>
+</div>
+</div>
+<div class="section" id="counting">
+<h2>Counting<a class="headerlink" href="#counting" title="Permalink to this headline">¶</a></h2>
+<p>In some very rare circumstances, it is interesting to use the repetition
+of options to count an integer up.  This can be used for verbosity flags,
+for instance:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;-v&#39;</span><span class="p">,</span> <span class="s">&#39;--verbose&#39;</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="n">verbose</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Verbosity: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">verbose</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And on the command line:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ log -vvv
+Verbosity: 3
+</pre></div>
+</div>
+</div>
+<div class="section" id="boolean-flags">
+<h2>Boolean Flags<a class="headerlink" href="#boolean-flags" title="Permalink to this headline">¶</a></h2>
+<p>Boolean flags are options that can be enabled or disabled.  This can be
+accomplished by defining two flags in one go separated by a slash (<code class="docutils literal"><span class="pre">/</span></code>)
+for enabling or disabling the option.  (If a slash is in an option string,
+Click automatically knows that it&#8217;s a boolean flag and will pass
+<code class="docutils literal"><span class="pre">is_flag=True</span></code> implicitly.)  Click always wants you to provide an enable
+and disable flag so that you can change the default later.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--shout/--no-shout&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="n">shout</span><span class="p">):</span>
+    <span class="n">rv</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span>
+    <span class="k">if</span> <span class="n">shout</span><span class="p">:</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="s">&#39;!!!!111&#39;</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">rv</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And on the command line:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ info --shout
+LINUX2!!!!111
+$ info --no-shout
+linux2
+</pre></div>
+</div>
+<p>If you really don&#8217;t want an off-switch, you can just define one and
+manually inform Click that something is a flag:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--shout&#39;</span><span class="p">,</span> <span class="n">is_flag</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="n">shout</span><span class="p">):</span>
+    <span class="n">rv</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span>
+    <span class="k">if</span> <span class="n">shout</span><span class="p">:</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="s">&#39;!!!!111&#39;</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">rv</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And on the command line:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ info --shout
+LINUX2!!!!111
+</pre></div>
+</div>
+<p>Note that if a slash is contained in your option already (for instance, if
+you use Windows-style parameters where <code class="docutils literal"><span class="pre">/</span></code> is the prefix character), you
+can alternatively split the parameters through <code class="docutils literal"><span class="pre">;</span></code> instead:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;/debug;/no-debug&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="n">debug</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;debug=</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">debug</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">log</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="feature-switches">
+<h2>Feature Switches<a class="headerlink" href="#feature-switches" title="Permalink to this headline">¶</a></h2>
+<p>In addition to boolean flags, there are also feature switches.  These are
+implemented by setting multiple options to the same parameter name and
+defining a flag value.  Note that by providing the <code class="docutils literal"><span class="pre">flag_value</span></code> parameter,
+Click will implicitly set <code class="docutils literal"><span class="pre">is_flag=True</span></code>.</p>
+<p>To set a default flag, assign a value of <cite>True</cite> to the flag that should be
+the default.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--upper&#39;</span><span class="p">,</span> <span class="s">&#39;transformation&#39;</span><span class="p">,</span> <span class="n">flag_value</span><span class="o">=</span><span class="s">&#39;upper&#39;</span><span class="p">,</span>
+              <span class="n">default</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--lower&#39;</span><span class="p">,</span> <span class="s">&#39;transformation&#39;</span><span class="p">,</span> <span class="n">flag_value</span><span class="o">=</span><span class="s">&#39;lower&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="n">transformation</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">platform</span><span class="p">,</span> <span class="n">transformation</span><span class="p">)())</span>
+</pre></div>
+</div>
+<p>And on the command line:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ info --upper
+LINUX2
+$ info --lower
+linux2
+$ info
+LINUX2
+</pre></div>
+</div>
+</div>
+<div class="section" id="choice-options">
+<span id="choice-opts"></span><h2>Choice Options<a class="headerlink" href="#choice-options" title="Permalink to this headline">¶</a></h2>
+<p>Sometimes, you want to have a parameter be a choice of a list of values.
+In that case you can use <a class="reference internal" href="api.html#click.Choice" title="click.Choice"><code class="xref py py-class docutils literal"><span class="pre">Choice</span></code></a> type.  It can be instantiated
+with a list of valid values.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--hash-type&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">Choice</span><span class="p">([</span><span class="s">&#39;md5&#39;</span><span class="p">,</span> <span class="s">&#39;sha1&#39;</span><span class="p">]))</span>
+<span class="k">def</span> <span class="nf">digest</span><span class="p">(</span><span class="n">hash_type</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">hash_type</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>What it looks like:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ digest --hash-type=md5
+md5
+
+$ digest --hash-type=foo
+Usage: digest [OPTIONS]
+
+Error: Invalid value for &quot;--hash-type&quot;: invalid choice: foo. (choose from md5, sha1)
+
+$ digest --help
+Usage: digest [OPTIONS]
+
+Options:
+  --hash-type [md5|sha1]
+  --help                  Show this message and exit.
+</pre></div>
+</div>
+</div>
+<div class="section" id="prompting">
+<span id="option-prompting"></span><h2>Prompting<a class="headerlink" href="#prompting" title="Permalink to this headline">¶</a></h2>
+<p>In some cases, you want parameters that can be provided from the command line,
+but if not provided, ask for user input instead.  This can be implemented with
+Click by defining a prompt string.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--name&#39;</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Hello </span><span class="si">%s</span><span class="s">!&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And what it looks like:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ hello --name=John
+Hello John!
+$ hello
+Name: John
+Hello John!
+</pre></div>
+</div>
+<p>If you are not happy with the default prompt string, you can ask for
+a different one:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--name&#39;</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s">&#39;Your name please&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Hello </span><span class="si">%s</span><span class="s">!&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>What it looks like:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ hello
+Your name please: John
+Hello John!
+</pre></div>
+</div>
+</div>
+<div class="section" id="password-prompts">
+<h2>Password Prompts<a class="headerlink" href="#password-prompts" title="Permalink to this headline">¶</a></h2>
+<p>Click also supports hidden prompts and asking for confirmation.  This is
+useful for password input:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--password&#39;</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">hide_input</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+              <span class="n">confirmation_prompt</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">encrypt</span><span class="p">(</span><span class="n">password</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Encrypting password to </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">password</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;rot13&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>What it looks like:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ encrypt
+Password: 
+Repeat for confirmation: 
+Encrypting password to frperg
+</pre></div>
+</div>
+<p>Because this combination of parameters is quite common, this can also be
+replaced with the <a class="reference internal" href="api.html#click.password_option" title="click.password_option"><code class="xref py py-func docutils literal"><span class="pre">password_option()</span></code></a> decorator:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.password_option</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">encrypt</span><span class="p">(</span><span class="n">password</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Encrypting password to </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">password</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;rot13&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="dynamic-defaults-for-prompts">
+<h2>Dynamic Defaults for Prompts<a class="headerlink" href="#dynamic-defaults-for-prompts" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal"><span class="pre">auto_envvar_prefix</span></code> and <code class="docutils literal"><span class="pre">default_map</span></code> options for the context
+allow the program to read option values from the environment or a
+configuration file.  However, this overrides the prompting mechanism, so
+that the user does not get the option to change the value interactively.</p>
+<p>If you want to let the user configure the default value, but still be
+prompted if the option isn&#8217;t specified on the command line, you can do so
+by supplying a callable as the default value. For example, to get a default
+from the environment:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--username&#39;</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+              <span class="n">default</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;USER&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">username</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Hello,&quot;</span><span class="p">,</span> <span class="n">username</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="callbacks-and-eager-options">
+<h2>Callbacks and Eager Options<a class="headerlink" href="#callbacks-and-eager-options" title="Permalink to this headline">¶</a></h2>
+<p>Sometimes, you want a parameter to completely change the execution flow.
+For instance, this is the case when you want to have a <code class="docutils literal"><span class="pre">--version</span></code>
+parameter that prints out the version and then exits the application.</p>
+<p>Note: an actual implementation of a <code class="docutils literal"><span class="pre">--version</span></code> parameter that is
+reusable is available in Click as <a class="reference internal" href="api.html#click.version_option" title="click.version_option"><code class="xref py py-func docutils literal"><span class="pre">click.version_option()</span></code></a>.  The code
+here is merely an example of how to implement such a flag.</p>
+<p>In such cases, you need two concepts: eager parameters and a callback.  An
+eager parameter is a parameter that is handled before others, and a
+callback is what executes after the parameter is handled.  The eagerness
+is necessary so that an earlier required parameter does not produce an
+error message.  For instance, if <code class="docutils literal"><span class="pre">--version</span></code> was not eager and a
+parameter <code class="docutils literal"><span class="pre">--foo</span></code> was required and defined before, you would need to
+specify it for <code class="docutils literal"><span class="pre">--version</span></code> to work.  For more information, see
+<a class="reference internal" href="advanced.html#callback-evaluation-order"><span>Callback Evaluation Order</span></a>.</p>
+<p>A callback is a function that is invoked with two parameters: the current
+<a class="reference internal" href="api.html#click.Context" title="click.Context"><code class="xref py py-class docutils literal"><span class="pre">Context</span></code></a> and the value.  The context provides some useful features
+such as quitting the application and gives access to other already
+processed parameters.</p>
+<p>Here an example for a <code class="docutils literal"><span class="pre">--version</span></code> flag:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">print_version</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span> <span class="ow">or</span> <span class="n">ctx</span><span class="o">.</span><span class="n">resilient_parsing</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Version 1.0&#39;</span><span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+
+<span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--version&#39;</span><span class="p">,</span> <span class="n">is_flag</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">print_version</span><span class="p">,</span>
+              <span class="n">expose_value</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">is_eager</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">hello</span><span class="p">():</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Hello World!&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <cite>expose_value</cite> parameter prevents the pretty pointless <code class="docutils literal"><span class="pre">version</span></code>
+parameter from being passed to the callback.  If that was not specified, a
+boolean would be passed to the <cite>hello</cite> script.  The <cite>resilient_parsing</cite>
+flag is applied to the context if Click wants to parse the command line
+without any destructive behavior that would change the execution flow.  In
+this case, because we would exit the program, we instead do nothing.</p>
+<p>What it looks like:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ hello
+Hello World!
+$ hello --version
+Version 1.0
+</pre></div>
+</div>
+<div class="admonition-callback-signature-changes admonition">
+<p class="first admonition-title">Callback Signature Changes</p>
+<p class="last">In Click 2.0 the signature for callbacks changed.  For more
+information about these changes see <a class="reference internal" href="upgrading.html#upgrade-to-2-0"><span>Upgrading to 2.0</span></a>.</p>
+</div>
+</div>
+<div class="section" id="yes-parameters">
+<h2>Yes Parameters<a class="headerlink" href="#yes-parameters" title="Permalink to this headline">¶</a></h2>
+<p>For dangerous operations, it&#8217;s very useful to be able to ask a user for
+confirmation.  This can be done by adding a boolean <code class="docutils literal"><span class="pre">--yes</span></code> flag and
+asking for confirmation if the user did not provide it and to fail in a
+callback:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">abort_if_false</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="p">:</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">abort</span><span class="p">()</span>
+
+<span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--yes&#39;</span><span class="p">,</span> <span class="n">is_flag</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">abort_if_false</span><span class="p">,</span>
+              <span class="n">expose_value</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+              <span class="n">prompt</span><span class="o">=</span><span class="s">&#39;Are you sure you want to drop the db?&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">dropdb</span><span class="p">():</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Dropped all tables!&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And what it looks like on the command line:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ dropdb
+Are you sure you want to drop the db? [y/N]: n
+Aborted!
+$ dropdb --yes
+Dropped all tables!
+</pre></div>
+</div>
+<p>Because this combination of parameters is quite common, this can also be
+replaced with the <a class="reference internal" href="api.html#click.confirmation_option" title="click.confirmation_option"><code class="xref py py-func docutils literal"><span class="pre">confirmation_option()</span></code></a> decorator:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.confirmation_option</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s">&#39;Are you sure you want to drop the db?&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">dropdb</span><span class="p">():</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Dropped all tables!&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition-callback-signature-changes admonition">
+<p class="first admonition-title">Callback Signature Changes</p>
+<p class="last">In Click 2.0 the signature for callbacks changed.  For more
+information about these changes see <a class="reference internal" href="upgrading.html#upgrade-to-2-0"><span>Upgrading to 2.0</span></a>.</p>
+</div>
+</div>
+<div class="section" id="values-from-environment-variables">
+<h2>Values from Environment Variables<a class="headerlink" href="#values-from-environment-variables" title="Permalink to this headline">¶</a></h2>
+<p>A very useful feature of Click is the ability to accept parameters from
+environment variables in addition to regular parameters.  This allows
+tools to be automated much easier.  For instance, you might want to pass
+a configuration file with a <code class="docutils literal"><span class="pre">--config</span></code> parameter but also support exporting
+a <code class="docutils literal"><span class="pre">TOOL_CONFIG=hello.cfg</span></code> key-value pair for a nicer development
+experience.</p>
+<p>This is supported by Click in two ways.  One is to automatically build
+environment variables which is supported for options only.  To enable this
+feature, the <code class="docutils literal"><span class="pre">auto_envvar_prefix</span></code> parameter needs to be passed to the
+script that is invoked.  Each command and parameter is then added as an
+uppercase underscore-separated variable.  If you have a subcommand
+called <code class="docutils literal"><span class="pre">foo</span></code> taking an option called <code class="docutils literal"><span class="pre">bar</span></code> and the prefix is
+<code class="docutils literal"><span class="pre">MY_TOOL</span></code>, then the variable is <code class="docutils literal"><span class="pre">MY_TOOL_FOO_BAR</span></code>.</p>
+<p>Example usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--username&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">greet</span><span class="p">(</span><span class="n">username</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Hello </span><span class="si">%s</span><span class="s">!&#39;</span> <span class="o">%</span> <span class="n">username</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">greet</span><span class="p">(</span><span class="n">auto_envvar_prefix</span><span class="o">=</span><span class="s">&#39;GREETER&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And from the command line:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ export GREETER_USERNAME=john
+$ greet
+Hello john!
+</pre></div>
+</div>
+<p>The second option is to manually pull values in from specific environment
+variables by defining the name of the environment variable on the option.</p>
+<p>Example usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--username&#39;</span><span class="p">,</span> <span class="n">envvar</span><span class="o">=</span><span class="s">&#39;USERNAME&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">greet</span><span class="p">(</span><span class="n">username</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Hello </span><span class="si">%s</span><span class="s">!&#39;</span> <span class="o">%</span> <span class="n">username</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">greet</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>And from the command line:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ export USERNAME=john
+$ greet
+Hello john!
+</pre></div>
+</div>
+<p>In that case it can also be a list of different environment variables
+where the first one is picked.</p>
+</div>
+<div class="section" id="multiple-values-from-environment-values">
+<h2>Multiple Values from Environment Values<a class="headerlink" href="#multiple-values-from-environment-values" title="Permalink to this headline">¶</a></h2>
+<p>As options can accept multiple values, pulling in such values from
+environment variables (which are strings) is a bit more complex.  The way
+Click solves this is by leaving it up to the type to customize this
+behavior.  For both <code class="docutils literal"><span class="pre">multiple</span></code> and <code class="docutils literal"><span class="pre">nargs</span></code> with values other than
+<code class="docutils literal"><span class="pre">1</span></code>, Click will invoke the <a class="reference internal" href="api.html#click.ParamType.split_envvar_value" title="click.ParamType.split_envvar_value"><code class="xref py py-meth docutils literal"><span class="pre">ParamType.split_envvar_value()</span></code></a> method to
+perform the splitting.</p>
+<p>The default implementation for all types is to split on whitespace.  The
+exceptions to this rule are the <a class="reference internal" href="api.html#click.File" title="click.File"><code class="xref py py-class docutils literal"><span class="pre">File</span></code></a> and <a class="reference internal" href="api.html#click.Path" title="click.Path"><code class="xref py py-class docutils literal"><span class="pre">Path</span></code></a> types
+which both split according to the operating system&#8217;s path splitting rules.
+On Unix systems like Linux and OS X, the splitting happens for those on
+every colon (<code class="docutils literal"><span class="pre">:</span></code>), and for Windows, on every semicolon (<code class="docutils literal"><span class="pre">;</span></code>).</p>
+<p>Example usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;paths&#39;</span><span class="p">,</span> <span class="s">&#39;--path&#39;</span><span class="p">,</span> <span class="n">envvar</span><span class="o">=</span><span class="s">&#39;PATHS&#39;</span><span class="p">,</span> <span class="n">multiple</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+              <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">Path</span><span class="p">())</span>
+<span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="n">paths</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">perform</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>And from the command line:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ export PATHS=./foo/bar:./test
+$ perform
+./foo/bar
+./test
+</pre></div>
+</div>
+</div>
+<div class="section" id="other-prefix-characters">
+<h2>Other Prefix Characters<a class="headerlink" href="#other-prefix-characters" title="Permalink to this headline">¶</a></h2>
+<p>Click can deal with alternative prefix characters other than <code class="docutils literal"><span class="pre">-</span></code> for
+options.  This is for instance useful if you want to handle slashes as
+parameters <code class="docutils literal"><span class="pre">/</span></code> or something similar.  Note that this is strongly
+discouraged in general because Click wants developers to stay close to
+POSIX semantics.  However in certain situations this can be useful:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;+w/-w&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">chmod</span><span class="p">(</span><span class="n">w</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;writable=</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">w</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">chmod</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>And from the command line:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ chmod +w
+writable=True
+$ chmod -w
+writable=False
+</pre></div>
+</div>
+<p>Note that if you are using <code class="docutils literal"><span class="pre">/</span></code> as prefix character and you want to use a
+boolean flag you need to separate it with <code class="docutils literal"><span class="pre">;</span></code> instead of <code class="docutils literal"><span class="pre">/</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;/debug;/no-debug&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="n">debug</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;debug=</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">debug</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">log</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="range-options">
+<span id="ranges"></span><h2>Range Options<a class="headerlink" href="#range-options" title="Permalink to this headline">¶</a></h2>
+<p>A special mention should go to the <a class="reference internal" href="api.html#click.IntRange" title="click.IntRange"><code class="xref py py-class docutils literal"><span class="pre">IntRange</span></code></a> type, which works very
+similarly to the <a class="reference internal" href="api.html#click.INT" title="click.INT"><code class="xref py py-data docutils literal"><span class="pre">INT</span></code></a> type, but restricts the value to fall into a
+specific range (inclusive on both edges).  It has two modes:</p>
+<ul class="simple">
+<li>the default mode (non-clamping mode) where a value that falls outside
+of the range will cause an error.</li>
+<li>an optional clamping mode where a value that falls outside of the
+range will be clamped.  This means that a range of <code class="docutils literal"><span class="pre">0-5</span></code> would
+return <code class="docutils literal"><span class="pre">5</span></code> for the value <code class="docutils literal"><span class="pre">10</span></code> or <code class="docutils literal"><span class="pre">0</span></code> for the value <code class="docutils literal"><span class="pre">-1</span></code> (for
+example).</li>
+</ul>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--count&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">IntRange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">clamp</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--digit&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">click</span><span class="o">.</span><span class="n">IntRange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">repeat</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">digit</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">digit</span><span class="p">)</span> <span class="o">*</span> <span class="n">count</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">repeat</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>And from the command line:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ repeat --count=1000 --digit=5
+55555555555555555555
+$ repeat --count=1000 --digit=12
+Usage: repeat [OPTIONS]
+
+Error: Invalid value for &quot;--digit&quot;: 12 is not in the valid range of 0 to 10.
+</pre></div>
+</div>
+<p>If you pass <code class="docutils literal"><span class="pre">None</span></code> for any of the edges, it means that the range is open
+at that side.</p>
+</div>
+<div class="section" id="callbacks-for-validation">
+<h2>Callbacks for Validation<a class="headerlink" href="#callbacks-for-validation" title="Permalink to this headline">¶</a></h2>
+<div class="versionchanged">
+<p><span class="versionmodified">Changed in version 2.0.</span></p>
+</div>
+<p>If you want to apply custom validation logic, you can do this in the
+parameter callbacks.  These callbacks can both modify values as well as
+raise errors if the validation does not work.</p>
+<p>In Click 1.0, you can only raise the <a class="reference internal" href="api.html#click.UsageError" title="click.UsageError"><code class="xref py py-exc docutils literal"><span class="pre">UsageError</span></code></a> but starting with
+Click 2.0, you can also raise the <a class="reference internal" href="api.html#click.BadParameter" title="click.BadParameter"><code class="xref py py-exc docutils literal"><span class="pre">BadParameter</span></code></a> error, which has the
+added advantage that it will automatically format the error message to
+also contain the parameter name.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">validate_rolls</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">rolls</span><span class="p">,</span> <span class="n">dice</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">dice</span><span class="p">,</span> <span class="n">rolls</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">click</span><span class="o">.</span><span class="n">BadParameter</span><span class="p">(</span><span class="s">&#39;rolls need to be in format NdM&#39;</span><span class="p">)</span>
+
+<span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--rolls&#39;</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">validate_rolls</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">&#39;1d6&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">roll</span><span class="p">(</span><span class="n">rolls</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Rolling a </span><span class="si">%d</span><span class="s">-sided dice </span><span class="si">%d</span><span class="s"> time(s)&#39;</span> <span class="o">%</span> <span class="n">rolls</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">roll</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>And what it looks like:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ roll --rolls=42
+Usage: roll [OPTIONS]
+
+Error: Invalid value for &quot;--rolls&quot;: rolls need to be in format NdM
+
+$ roll --rolls=2d12
+Rolling a 12-sided dice 2 time(s)
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p class="logo"><a href="index.html">
+  <img class="logo" src="_static/click-small@2x.png" width="120" height="50" alt="Logo">
+</a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Options</a><ul>
+<li><a class="reference internal" href="#basic-value-options">Basic Value Options</a></li>
+<li><a class="reference internal" href="#multi-value-options">Multi Value Options</a></li>
+<li><a class="reference internal" href="#tuples-as-multi-value-options">Tuples as Multi Value Options</a></li>
+<li><a class="reference internal" href="#multiple-options">Multiple Options</a></li>
+<li><a class="reference internal" href="#counting">Counting</a></li>
+<li><a class="reference internal" href="#boolean-flags">Boolean Flags</a></li>
+<li><a class="reference internal" href="#feature-switches">Feature Switches</a></li>
+<li><a class="reference internal" href="#choice-options">Choice Options</a></li>
+<li><a class="reference internal" href="#prompting">Prompting</a></li>
+<li><a class="reference internal" href="#password-prompts">Password Prompts</a></li>
+<li><a class="reference internal" href="#dynamic-defaults-for-prompts">Dynamic Defaults for Prompts</a></li>
+<li><a class="reference internal" href="#callbacks-and-eager-options">Callbacks and Eager Options</a></li>
+<li><a class="reference internal" href="#yes-parameters">Yes Parameters</a></li>
+<li><a class="reference internal" href="#values-from-environment-variables">Values from Environment Variables</a></li>
+<li><a class="reference internal" href="#multiple-values-from-environment-values">Multiple Values from Environment Values</a></li>
+<li><a class="reference internal" href="#other-prefix-characters">Other Prefix Characters</a></li>
+<li><a class="reference internal" href="#range-options">Range Options</a></li>
+<li><a class="reference internal" href="#callbacks-for-validation">Callbacks for Validation</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="parameters.html" title="previous chapter">Parameters</a></li>
+      <li>Next: <a href="arguments.html" title="next chapter">Arguments</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/options.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Armin Ronacher.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/options.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Setuptools Integration &mdash; click</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="click" href="index.html" />
+    <link rel="next" title="Parameters" href="parameters.html" />
+    <link rel="prev" title="Quickstart" href="quickstart.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="setuptools-integration">
+<span id="id1"></span><h1>Setuptools Integration<a class="headerlink" href="#setuptools-integration" title="Permalink to this headline">¶</a></h1>
+<p>When writing command line utilities, it&#8217;s recommended to write them as
+modules that are distributed with setuptools instead of using Unix
+shebangs.</p>
+<p>Why would you want to do that?  There are a bunch of reasons:</p>
+<ol class="arabic">
+<li><p class="first">One of the problems with the traditional approach is that the first
+module the Python interpreter loads has an incorrect name.  This might
+sound like a small issue but it has quite significant implications.</p>
+<p>The first module is not called by its actual name, but the
+interpreter renames it to <code class="docutils literal"><span class="pre">__main__</span></code>.  While that is a perfectly
+valid name it means that if another piece of code wants to import from
+that module it will trigger the import a second time under its real
+name and all of a sudden your code is imported twice.</p>
+</li>
+<li><p class="first">Not on all platforms are things that easy to execute.  On Linux and OS
+X you can add a comment to the beginning of the file (<code class="docutils literal"><span class="pre">#!/usr/bin/env</span>
+<span class="pre">python</span></code>) and your script works like an executable (assuming it has
+the executable bit set).  This however does not work on Windows.
+While on Windows you can associate interpreters with file extensions
+(like having everything ending in <code class="docutils literal"><span class="pre">.py</span></code> execute through the Python
+interpreter) you will then run into issues if you want to use the
+script in a virtualenv.</p>
+<p>In fact running a script in a virtualenv is an issue with OS X and
+Linux as well.  With the traditional approach you need to have the
+whole virtualenv activated so that the correct Python interpreter is
+used.  Not very user friendly.</p>
+</li>
+<li><p class="first">The main trick only works if the script is a Python module.  If your
+application grows too large and you want to start using a package you
+will run into issues.</p>
+</li>
+</ol>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>To bundle your script with setuptools, all you need is the script in a
+Python package and a <code class="docutils literal"><span class="pre">setup.py</span></code> file.</p>
+<p>Imagine this directory structure:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">yourscript</span><span class="o">.</span><span class="n">py</span>
+<span class="n">setup</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Contents of <code class="docutils literal"><span class="pre">yourscript.py</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">click</span>
+
+<span class="nd">@click.command</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Example script.&quot;&quot;&quot;</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Hello World!&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Contents of <code class="docutils literal"><span class="pre">setup.py</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span>
+
+<span class="n">setup</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s">&#39;yourscript&#39;</span><span class="p">,</span>
+    <span class="n">version</span><span class="o">=</span><span class="s">&#39;0.1&#39;</span><span class="p">,</span>
+    <span class="n">py_modules</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;yourscript&#39;</span><span class="p">],</span>
+    <span class="n">install_requires</span><span class="o">=</span><span class="p">[</span>
+        <span class="s">&#39;Click&#39;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="n">entry_points</span><span class="o">=</span><span class="s">&#39;&#39;&#39;</span>
+<span class="s">        [console_scripts]</span>
+<span class="s">        yourscript=yourscript:cli</span>
+<span class="s">    &#39;&#39;&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The magic is in the <code class="docutils literal"><span class="pre">entry_points</span></code> parameter.  Below
+<code class="docutils literal"><span class="pre">console_scripts</span></code>, each line identifies one console script.  The first
+part before the equals sign (<code class="docutils literal"><span class="pre">=</span></code>) is the name of the script that should
+be generated, the second part is the import path followed by a colon
+(<code class="docutils literal"><span class="pre">:</span></code>) with the Click command.</p>
+<p>That&#8217;s it.</p>
+</div>
+<div class="section" id="testing-the-script">
+<h2>Testing The Script<a class="headerlink" href="#testing-the-script" title="Permalink to this headline">¶</a></h2>
+<p>To test the script, you can make a new virtualenv and then install your
+package:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ virtualenv venv
+$ . venv/bin/activate
+$ pip install --editable .
+</pre></div>
+</div>
+<p>Afterwards, your command should be available:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ yourscript
+Hello World!
+</pre></div>
+</div>
+</div>
+<div class="section" id="scripts-in-packages">
+<h2>Scripts in Packages<a class="headerlink" href="#scripts-in-packages" title="Permalink to this headline">¶</a></h2>
+<p>If your script is growing and you want to switch over to your script being
+contained in a Python package the changes necessary are minimal.  Let&#8217;s
+assume your directory structure changed to this:</p>
+<div class="highlight-python"><div class="highlight"><pre>yourpackage/
+    __init__.py
+    main.py
+    utils.py
+    scripts/
+        __init__.py
+        yourscript.py
+</pre></div>
+</div>
+<p>In this case instead of using <code class="docutils literal"><span class="pre">py_modules</span></code> in your <code class="docutils literal"><span class="pre">setup.py</span></code> file you
+can use <code class="docutils literal"><span class="pre">packages</span></code> and the automatic package finding support of
+setuptools.  In addition to that it&#8217;s also recommended to include other
+package data.</p>
+<p>These would be the modified contents of <code class="docutils literal"><span class="pre">setup.py</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">setuptools</span> <span class="kn">import</span> <span class="n">setup</span><span class="p">,</span> <span class="n">find_packages</span>
+
+<span class="n">setup</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s">&#39;yourpackage&#39;</span><span class="p">,</span>
+    <span class="n">version</span><span class="o">=</span><span class="s">&#39;0.1&#39;</span><span class="p">,</span>
+    <span class="n">packages</span><span class="o">=</span><span class="n">find_packages</span><span class="p">(),</span>
+    <span class="n">include_package_data</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">install_requires</span><span class="o">=</span><span class="p">[</span>
+        <span class="s">&#39;Click&#39;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="n">entry_points</span><span class="o">=</span><span class="s">&#39;&#39;&#39;</span>
+<span class="s">        [console_scripts]</span>
+<span class="s">        yourscript=yourpackage.scripts.yourscript:cli</span>
+<span class="s">    &#39;&#39;&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p class="logo"><a href="index.html">
+  <img class="logo" src="_static/click-small@2x.png" width="120" height="50" alt="Logo">
+</a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Setuptools Integration</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#testing-the-script">Testing The Script</a></li>
+<li><a class="reference internal" href="#scripts-in-packages">Scripts in Packages</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="quickstart.html" title="previous chapter">Quickstart</a></li>
+      <li>Next: <a href="parameters.html" title="next chapter">Parameters</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/setuptools.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Armin Ronacher.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/setuptools.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to the Click Documentation &mdash; click</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="click" href="#" />
+    <link rel="next" title="Why Click?" href="why.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-the-click-documentation">
+<h1>Welcome to the Click Documentation<a class="headerlink" href="#welcome-to-the-click-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Click is a Python package for creating beautiful command line interfaces
+in a composable way with as little code as necessary.  It&#8217;s the &#8220;Command
+Line Interface Creation Kit&#8221;.  It&#8217;s highly configurable but comes with
+sensible defaults out of the box.</p>
+<p>It aims to make the process of writing command line tools quick and fun
+while also preventing any frustration caused by the inability to implement
+an intended CLI API.</p>
+<p>Click in three points:</p>
+<ul class="simple">
+<li>arbitrary nesting of commands</li>
+<li>automatic help page generation</li>
+<li>supports lazy loading of subcommands at runtime</li>
+</ul>
+<p>What does it look like?  Here is an example of a simple Click program:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">click</span>
+
+<span class="nd">@click.command</span><span class="p">()</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--count&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;Number of greetings.&#39;</span><span class="p">)</span>
+<span class="nd">@click.option</span><span class="p">(</span><span class="s">&#39;--name&#39;</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s">&#39;Your name&#39;</span><span class="p">,</span>
+              <span class="n">help</span><span class="o">=</span><span class="s">&#39;The person to greet.&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simple program that greets NAME for a total of COUNT times.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Hello </span><span class="si">%s</span><span class="s">!&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">hello</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>And what it looks like when run:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ python hello.py --count=3
+Your name: John
+Hello John!
+Hello John!
+Hello John!
+</pre></div>
+</div>
+<p>It automatically generates nicely formatted help pages:</p>
+<div class="highlight-text"><div class="highlight"><pre>$ python hello.py --help
+Usage: hello.py [OPTIONS]
+
+  Simple program that greets NAME for a total of COUNT times.
+
+Options:
+  --count INTEGER  Number of greetings.
+  --name TEXT      The person to greet.
+  --help           Show this message and exit.
+</pre></div>
+</div>
+<p>You can get the library directly from PyPI:</p>
+<div class="highlight-python"><div class="highlight"><pre>pip install click
+</pre></div>
+</div>
+<div class="section" id="documentation-contents">
+<h2>Documentation Contents<a class="headerlink" href="#documentation-contents" title="Permalink to this headline">¶</a></h2>
+<p>This part of the documentation guides you through all of the library&#8217;s
+usage patterns.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="why.html">Why Click?</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="why.html#why-not-argparse">Why not Argparse?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="why.html#why-not-docopt-etc">Why not Docopt etc.?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="why.html#why-hardcoded-behaviors">Why Hardcoded Behaviors?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="why.html#why-no-auto-correction">Why No Auto Correction?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#virtualenv">virtualenv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#screencast-and-examples">Screencast and Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#basic-concepts">Basic Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#echoing">Echoing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#nesting-commands">Nesting Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#adding-parameters">Adding Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#switching-to-setuptools">Switching to Setuptools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="setuptools.html">Setuptools Integration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="setuptools.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setuptools.html#testing-the-script">Testing The Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setuptools.html#scripts-in-packages">Scripts in Packages</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="parameters.html#differences">Differences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters.html#parameter-types">Parameter Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters.html#parameter-names">Parameter Names</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters.html#implementing-custom-types">Implementing Custom Types</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="options.html">Options</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="options.html#basic-value-options">Basic Value Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="options.html#multi-value-options">Multi Value Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="options.html#tuples-as-multi-value-options">Tuples as Multi Value Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="options.html#multiple-options">Multiple Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="options.html#counting">Counting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="options.html#boolean-flags">Boolean Flags</a></li>
+<li class="toctree-l2"><a class="reference internal" href="options.html#feature-switches">Feature Switches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="options.html#choice-options">Choice Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="options.html#prompting">Prompting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="options.html#password-prompts">Password Prompts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="options.html#dynamic-defaults-for-prompts">Dynamic Defaults for Prompts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="options.html#callbacks-and-eager-options">Callbacks and Eager Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="options.html#yes-parameters">Yes Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="options.html#values-from-environment-variables">Values from Environment Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="options.html#multiple-values-from-environment-values">Multiple Values from Environment Values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="options.html#other-prefix-characters">Other Prefix Characters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="options.html#range-options">Range Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="options.html#callbacks-for-validation">Callbacks for Validation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="arguments.html">Arguments</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="arguments.html#basic-arguments">Basic Arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arguments.html#variadic-arguments">Variadic Arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arguments.html#file-arguments">File Arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arguments.html#file-path-arguments">File Path Arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arguments.html#file-opening-safety">File Opening Safety</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arguments.html#environment-variables">Environment Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arguments.html#option-like-arguments">Option-Like Arguments</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="commands.html">Commands and Groups</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="commands.html#callback-invocation">Callback Invocation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands.html#passing-parameters">Passing Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands.html#nested-handling-and-contexts">Nested Handling and Contexts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands.html#decorating-commands">Decorating Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands.html#group-invocation-without-command">Group Invocation Without Command</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands.html#custom-multi-commands">Custom Multi Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands.html#merging-multi-commands">Merging Multi Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands.html#multi-command-chaining">Multi Command Chaining</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands.html#multi-command-pipelines">Multi Command Pipelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands.html#overriding-defaults">Overriding Defaults</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands.html#context-defaults">Context Defaults</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commands.html#command-return-values">Command Return Values</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="prompts.html">User Input Prompts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="prompts.html#option-prompts">Option Prompts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prompts.html#input-prompts">Input Prompts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prompts.html#confirmation-prompts">Confirmation Prompts</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="documentation.html">Documenting Scripts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="documentation.html#help-texts">Help Texts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="documentation.html#preventing-rewrapping">Preventing Rewrapping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="documentation.html#meta-variables">Meta Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="documentation.html#command-short-help">Command Short Help</a></li>
+<li class="toctree-l2"><a class="reference internal" href="documentation.html#help-parameter-customization">Help Parameter Customization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="complex.html">Complex Applications</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="complex.html#basic-concepts">Basic Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="complex.html#building-a-git-clone">Building a Git Clone</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Patterns</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#command-aliases">Command Aliases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#parameter-modifications">Parameter Modifications</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#token-normalization">Token Normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#invoking-other-commands">Invoking Other Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#callback-evaluation-order">Callback Evaluation Order</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#forwarding-unknown-options">Forwarding Unknown Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#global-context-access">Global Context Access</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing Click Applications</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="testing.html#basic-testing">Basic Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testing.html#file-system-isolation">File System Isolation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testing.html#input-streams">Input Streams</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#printing-to-stdout">Printing to Stdout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#ansi-colors">ANSI Colors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#pager-support">Pager Support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#screen-clearing">Screen Clearing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#getting-characters-from-terminal">Getting Characters from Terminal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#waiting-for-key-press">Waiting for Key Press</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#launching-editors">Launching Editors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#launching-applications">Launching Applications</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#printing-filenames">Printing Filenames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#standard-streams">Standard Streams</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#intelligent-file-opening">Intelligent File Opening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#finding-application-folders">Finding Application Folders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#showing-progress-bars">Showing Progress Bars</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="bashcomplete.html">Bash Complete</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bashcomplete.html#limitations">Limitations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bashcomplete.html#what-it-completes">What it Completes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bashcomplete.html#activation">Activation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bashcomplete.html#activation-script">Activation Script</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exception Handling</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="exceptions.html#where-are-errors-handled">Where are Errors Handled?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exceptions.html#what-if-i-don-t-want-that">What if I don&#8217;t want that?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exceptions.html#which-exceptions-exist">Which Exceptions Exist?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="python3.html">Python 3 Support</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="python3.html#python-3-limitations">Python 3 Limitations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python3.html#python-2-and-3-differences">Python 2 and 3 Differences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python3.html#python-3-surrogate-handling">Python 3 Surrogate Handling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="python3.html#unicode-literals">Unicode Literals</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="api-reference">
+<h2>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h2>
+<p>If you are looking for information on a specific function, class, or
+method, this part of the documentation is for you.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api.html#decorators">Decorators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#utilities">Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#commands">Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#parameters">Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#context">Context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#types">Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#exceptions">Exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#formatting">Formatting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#parsing">Parsing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#testing">Testing</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="miscellaneous-pages">
+<h2>Miscellaneous Pages<a class="headerlink" href="#miscellaneous-pages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contrib.html">click-contrib</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Click Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-5-1">Version 5.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-5-0">Version 5.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-4-1">Version 4.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-4-0">Version 4.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-3-3">Version 3.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-3-2">Version 3.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-3-1">Version 3.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-3-0">Version 3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-2-6">Version 2.6</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-2-5">Version 2.5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-2-4">Version 2.4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-2-3">Version 2.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-2-2">Version 2.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-2-1">Version 2.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-2-0">Version 2.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-1-1">Version 1.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-1-0">Version 1.0</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="upgrading.html">Upgrading To Newer Releases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="upgrading.html#upgrading-to-3-2">Upgrading to 3.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="upgrading.html#upgrading-to-2-0">Upgrading to 2.0</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="license.html#license-text">License Text</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>About</h3>
+<p>
+  Click is a Python package for creating beautiful command line interfaces in a
+  composable way with as little amount of code as necessary. It’s the “Command
+  Line Interface Creation Kit”.
+</p>
+<h3>Useful Links</h3>
+<ul>
+  <li><a href="http://click.pocoo.org/">The Click Website</a></li>
+  <li><a href="http://pypi.python.org/pypi/click">click @ PyPI</a></li>
+  <li><a href="http://github.com/mitsuhiko/click">click @ github</a></li>
+  <li><a href="http://github.com/mitsuhiko/click/issues">Issue Tracker</a></li>
+</ul>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Armin Ronacher.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/index.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

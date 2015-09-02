@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Upgrading To Newer Releases &mdash; click</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="click" href="index.html" />
+    <link rel="next" title="License" href="license.html" />
+    <link rel="prev" title="Click Changelog" href="changelog.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="upgrading-to-newer-releases">
+<h1>Upgrading To Newer Releases<a class="headerlink" href="#upgrading-to-newer-releases" title="Permalink to this headline">¶</a></h1>
+<p>Click attempts the highest level of backwards compatibility but sometimes
+this is not entirely possible.  In case we need to break backwards
+compatibility this document gives you information about how to upgrade or
+handle backwards compatibility properly.</p>
+<div class="section" id="upgrading-to-3-2">
+<span id="upgrade-to-3-2"></span><h2>Upgrading to 3.2<a class="headerlink" href="#upgrading-to-3-2" title="Permalink to this headline">¶</a></h2>
+<p>Click 3.2 had to perform two changes to multi commands which were
+triggered by a change between Click 2 and Click 3 that had bigger
+consequences than anticipated.</p>
+<div class="section" id="context-invokes">
+<h3>Context Invokes<a class="headerlink" href="#context-invokes" title="Permalink to this headline">¶</a></h3>
+<p>Click 3.2 contains a fix for the <code class="xref py py-meth docutils literal"><span class="pre">Context.invoke()</span></code> function when used
+with other commands.  The original intention of this function was to
+invoke the other command as as if it came from the command line when it
+was passed a context object instead of a function.  This use was only
+documented in a single place in the documentation before and there was no
+proper explanation for the method in the API documentation.</p>
+<p>The core issue is that before 3.2 this call worked against intentions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ctx</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="n">other_command</span><span class="p">,</span> <span class="s">&#39;arg1&#39;</span><span class="p">,</span> <span class="s">&#39;arg2&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This was never intended to work as it does not allow Click to operate on
+the parameters.  Given that this pattern was never documented and ill
+intended the decision was made to change this behavior in a bugfix release
+before it spreads by accident and developers depend on it.</p>
+<p>The correct invocation for the above command is the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ctx</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="n">other_command</span><span class="p">,</span> <span class="n">name_of_arg1</span><span class="o">=</span><span class="s">&#39;arg1&#39;</span><span class="p">,</span> <span class="n">name_of_arg2</span><span class="o">=</span><span class="s">&#39;arg2&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This also allowed us to fix the issue that defaults were not handled
+properly by this function.</p>
+</div>
+<div class="section" id="multicommand-chaining-api">
+<h3>Multicommand Chaining API<a class="headerlink" href="#multicommand-chaining-api" title="Permalink to this headline">¶</a></h3>
+<p>Click 3 introduced multicommand chaning.  This required a change in how
+Click internally dispatches.  Unfortunately this change was not correctly
+implemented and it appeared that it was possible to provide an API that
+can inform the super command about all the subcommands that will be
+invoked.</p>
+<p>This assumption however does not work with one of the API guarantees that
+have been given in the past.  As such this functionality has been removed
+in 3.2 as it was already broken.  Instead the accidentally broken
+functionality of the <code class="xref py py-attr docutils literal"><span class="pre">Context.invoked_subcommand</span></code> attribute was
+restored.</p>
+<p>If you do require the know which exact commands will be invoked there are
+different ways to cope with this.  The first one is to let the subcommands
+all return functions and then to invoke the functions in a
+<code class="xref py py-meth docutils literal"><span class="pre">Context.resultcallback()</span></code>.</p>
+</div>
+</div>
+<div class="section" id="upgrading-to-2-0">
+<span id="upgrade-to-2-0"></span><h2>Upgrading to 2.0<a class="headerlink" href="#upgrading-to-2-0" title="Permalink to this headline">¶</a></h2>
+<p>Click 2.0 has one breaking change which is the signature for parameter
+callbacks.  Before 2.0, the callback was invoked with <code class="docutils literal"><span class="pre">(ctx,</span> <span class="pre">value)</span></code>
+whereas now it&#8217;s <code class="docutils literal"><span class="pre">(ctx,</span> <span class="pre">param,</span> <span class="pre">value)</span></code>.  This change was necessary as it
+otherwise made reusing callbacks too complicated.</p>
+<p>To ease the transition Click will still accept old callbacks.  Starting
+with Click 3.0 it will start to issue a warning to stderr to encourage you
+to upgrade.</p>
+<p>In case you want to support both Click 1.0 and Click 2.0, you can make a
+simple decorator that adjusts the signatures:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">update_wrapper</span>
+
+<span class="k">def</span> <span class="nf">compatcallback</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="c"># Click 1.0 does not have a version string stored, so we need to</span>
+    <span class="c"># use getattr here to be safe.</span>
+    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">click</span><span class="p">,</span> <span class="s">&#39;__version__&#39;</span><span class="p">,</span> <span class="s">&#39;0.0&#39;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="s">&#39;2.0&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">f</span>
+    <span class="k">return</span> <span class="n">update_wrapper</span><span class="p">(</span><span class="k">lambda</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">f</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">value</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>With that helper you can then write something like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@compatcallback</span>
+<span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Note that because Click 1.0 did not pass a parameter, the <cite>param</cite> argument
+here would be <cite>None</cite>, so a compatibility callback could not use that
+argument.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p class="logo"><a href="index.html">
+  <img class="logo" src="_static/click-small@2x.png" width="120" height="50" alt="Logo">
+</a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Upgrading To Newer Releases</a><ul>
+<li><a class="reference internal" href="#upgrading-to-3-2">Upgrading to 3.2</a><ul>
+<li><a class="reference internal" href="#context-invokes">Context Invokes</a></li>
+<li><a class="reference internal" href="#multicommand-chaining-api">Multicommand Chaining API</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#upgrading-to-2-0">Upgrading to 2.0</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="changelog.html" title="previous chapter">Click Changelog</a></li>
+      <li>Next: <a href="license.html" title="next chapter">License</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/upgrading.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Armin Ronacher.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/upgrading.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

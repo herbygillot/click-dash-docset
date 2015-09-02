@@ -1,0 +1,152 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>User Input Prompts &mdash; click</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="click" href="index.html" />
+    <link rel="next" title="Documenting Scripts" href="documentation.html" />
+    <link rel="prev" title="Commands and Groups" href="commands.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="user-input-prompts">
+<h1>User Input Prompts<a class="headerlink" href="#user-input-prompts" title="Permalink to this headline">¶</a></h1>
+<p>Click supports prompts in two different places.  The first is automated
+prompts when the parameter handling happens, and the second is to ask for
+prompts at a later point independently.</p>
+<p>This can be accomplished with the <a class="reference internal" href="api.html#click.prompt" title="click.prompt"><code class="xref py py-func docutils literal"><span class="pre">prompt()</span></code></a> function, which asks for
+valid input according to a type, or the <a class="reference internal" href="api.html#click.confirm" title="click.confirm"><code class="xref py py-func docutils literal"><span class="pre">confirm()</span></code></a> function, which asks
+for confirmation (yes/no).</p>
+<div class="section" id="option-prompts">
+<h2>Option Prompts<a class="headerlink" href="#option-prompts" title="Permalink to this headline">¶</a></h2>
+<p>Option prompts are integrated into the option interface.  See
+<a class="reference internal" href="options.html#option-prompting"><span>Prompting</span></a> for more information.  Internally, it
+automatically calls either <a class="reference internal" href="api.html#click.prompt" title="click.prompt"><code class="xref py py-func docutils literal"><span class="pre">prompt()</span></code></a> or <a class="reference internal" href="api.html#click.confirm" title="click.confirm"><code class="xref py py-func docutils literal"><span class="pre">confirm()</span></code></a> as necessary.</p>
+</div>
+<div class="section" id="input-prompts">
+<h2>Input Prompts<a class="headerlink" href="#input-prompts" title="Permalink to this headline">¶</a></h2>
+<p>To manually ask for user input, you can use the <a class="reference internal" href="api.html#click.prompt" title="click.prompt"><code class="xref py py-func docutils literal"><span class="pre">prompt()</span></code></a> function.
+By default, it accepts any Unicode string, but you can ask for any other
+type.  For instance, you can ask for a valid integer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">value</span> <span class="o">=</span> <span class="n">click</span><span class="o">.</span><span class="n">prompt</span><span class="p">(</span><span class="s">&#39;Please enter a valid integer&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Additionally, the type will be determined automatically if a default value is
+provided.  For instance, the following will only accept floats:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">value</span> <span class="o">=</span> <span class="n">click</span><span class="o">.</span><span class="n">prompt</span><span class="p">(</span><span class="s">&#39;Please enter a number&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">42.0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="confirmation-prompts">
+<h2>Confirmation Prompts<a class="headerlink" href="#confirmation-prompts" title="Permalink to this headline">¶</a></h2>
+<p>To ask if a user wants to continue with an action, the <a class="reference internal" href="api.html#click.confirm" title="click.confirm"><code class="xref py py-func docutils literal"><span class="pre">confirm()</span></code></a>
+function comes in handy.  By default, it returns the result of the prompt
+as a boolean value:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">click</span><span class="o">.</span><span class="n">confirm</span><span class="p">(</span><span class="s">&#39;Do you want to continue?&#39;</span><span class="p">):</span>
+    <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s">&#39;Well done!&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>There is also the option to make the function automatically abort the
+execution of the program if it does not return <code class="docutils literal"><span class="pre">True</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">click</span><span class="o">.</span><span class="n">confirm</span><span class="p">(</span><span class="s">&#39;Do you want to continue?&#39;</span><span class="p">,</span> <span class="n">abort</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p class="logo"><a href="index.html">
+  <img class="logo" src="_static/click-small@2x.png" width="120" height="50" alt="Logo">
+</a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">User Input Prompts</a><ul>
+<li><a class="reference internal" href="#option-prompts">Option Prompts</a></li>
+<li><a class="reference internal" href="#input-prompts">Input Prompts</a></li>
+<li><a class="reference internal" href="#confirmation-prompts">Confirmation Prompts</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="commands.html" title="previous chapter">Commands and Groups</a></li>
+      <li>Next: <a href="documentation.html" title="next chapter">Documenting Scripts</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/prompts.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Armin Ronacher.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/prompts.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

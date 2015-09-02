@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Exception Handling &mdash; click</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="click" href="index.html" />
+    <link rel="next" title="Python 3 Support" href="python3.html" />
+    <link rel="prev" title="Bash Complete" href="bashcomplete.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="exception-handling">
+<h1>Exception Handling<a class="headerlink" href="#exception-handling" title="Permalink to this headline">¶</a></h1>
+<p>Click internally uses exceptions to signal various error conditions that
+the user of the application might have caused.  Primarily this is things
+like incorrect usage.</p>
+<div class="section" id="where-are-errors-handled">
+<h2>Where are Errors Handled?<a class="headerlink" href="#where-are-errors-handled" title="Permalink to this headline">¶</a></h2>
+<p>Click&#8217;s main error handling is happening in <a class="reference internal" href="api.html#click.BaseCommand.main" title="click.BaseCommand.main"><code class="xref py py-meth docutils literal"><span class="pre">BaseCommand.main()</span></code></a>.  In
+there it handles all subclasses of <a class="reference internal" href="api.html#click.ClickException" title="click.ClickException"><code class="xref py py-exc docutils literal"><span class="pre">ClickException</span></code></a> as well as the
+standard <a class="reference external" href="http://docs.python.org/dev/library/exceptions.html#EOFError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal"><span class="pre">EOFError</span></code></a> and <a class="reference external" href="http://docs.python.org/dev/library/exceptions.html#KeyboardInterrupt" title="(in Python v3.6)"><code class="xref py py-exc docutils literal"><span class="pre">KeyboardInterrupt</span></code></a> exceptions.  The
+latter are internally translated into a <a class="reference internal" href="api.html#click.Abort" title="click.Abort"><code class="xref py py-exc docutils literal"><span class="pre">Abort</span></code></a>.</p>
+<p>The logic applied is the following:</p>
+<ol class="arabic simple">
+<li>If an <a class="reference external" href="http://docs.python.org/dev/library/exceptions.html#EOFError" title="(in Python v3.6)"><code class="xref py py-exc docutils literal"><span class="pre">EOFError</span></code></a> or <a class="reference external" href="http://docs.python.org/dev/library/exceptions.html#KeyboardInterrupt" title="(in Python v3.6)"><code class="xref py py-exc docutils literal"><span class="pre">KeyboardInterrupt</span></code></a> happens, reraise it
+as <a class="reference internal" href="api.html#click.Abort" title="click.Abort"><code class="xref py py-exc docutils literal"><span class="pre">Abort</span></code></a>.</li>
+<li>If an <a class="reference internal" href="api.html#click.ClickException" title="click.ClickException"><code class="xref py py-exc docutils literal"><span class="pre">ClickException</span></code></a> is raised, invoke the
+<code class="xref py py-meth docutils literal"><span class="pre">ClickException.show()</span></code> method on it to display it and then exit
+the program with <code class="xref py py-attr docutils literal"><span class="pre">ClickException.exit_code</span></code>.</li>
+<li>If an <a class="reference internal" href="api.html#click.Abort" title="click.Abort"><code class="xref py py-exc docutils literal"><span class="pre">Abort</span></code></a> exception is raised print the string <code class="docutils literal"><span class="pre">Aborted!</span></code>
+to standard error and exit the program with exit code <code class="docutils literal"><span class="pre">1</span></code>.</li>
+<li>if it goes through well, exit the program with exit code <code class="docutils literal"><span class="pre">0</span></code>.</li>
+</ol>
+</div>
+<div class="section" id="what-if-i-don-t-want-that">
+<h2>What if I don&#8217;t want that?<a class="headerlink" href="#what-if-i-don-t-want-that" title="Permalink to this headline">¶</a></h2>
+<p>Generally you always have the option to invoke the <code class="xref py py-meth docutils literal"><span class="pre">invoke()</span></code> method
+yourself.  For instance if you have a <a class="reference internal" href="api.html#click.Command" title="click.Command"><code class="xref py py-class docutils literal"><span class="pre">Command</span></code></a> you can invoke it
+manually like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ctx</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">make_context</span><span class="p">(</span><span class="s">&#39;command-name&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;args&#39;</span><span class="p">,</span> <span class="s">&#39;go&#39;</span><span class="p">,</span> <span class="s">&#39;here&#39;</span><span class="p">])</span>
+<span class="k">with</span> <span class="n">ctx</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this case exceptions will not be handled at all and bubbled up as you
+would expect.</p>
+<p>Starting with Click 3.0 you can also use the <code class="xref py py-meth docutils literal"><span class="pre">Command.main()</span></code> method
+but disable the standalone mode which will do two things: disable
+exception handling and disable the implicit <code class="xref py py-meth docutils literal"><span class="pre">sys.exit()</span></code> at the end.</p>
+<p>So you can do something like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">command</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="s">&#39;command-name&#39;</span><span class="p">,</span> <span class="s">&#39;args&#39;</span><span class="p">,</span> <span class="s">&#39;go&#39;</span><span class="p">,</span> <span class="s">&#39;here&#39;</span><span class="p">],</span>
+             <span class="n">standalone_mode</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="which-exceptions-exist">
+<h2>Which Exceptions Exist?<a class="headerlink" href="#which-exceptions-exist" title="Permalink to this headline">¶</a></h2>
+<p>Click has two exception bases: <a class="reference internal" href="api.html#click.ClickException" title="click.ClickException"><code class="xref py py-exc docutils literal"><span class="pre">ClickException</span></code></a> which is raised for
+all exceptions that Click wants to signal to the user and <a class="reference internal" href="api.html#click.Abort" title="click.Abort"><code class="xref py py-exc docutils literal"><span class="pre">Abort</span></code></a>
+which is used to instruct Click to abort the execution.</p>
+<p>A <a class="reference internal" href="api.html#click.ClickException" title="click.ClickException"><code class="xref py py-exc docutils literal"><span class="pre">ClickException</span></code></a> has a <code class="xref py py-meth docutils literal"><span class="pre">show()</span></code> method which
+can render an error message to stderr or the given file object.  If you
+want to use the exception yourself for doing something check the API docs
+about what else they provide.</p>
+<p>The following common subclasses exist:</p>
+<ul class="simple">
+<li><a class="reference internal" href="api.html#click.UsageError" title="click.UsageError"><code class="xref py py-exc docutils literal"><span class="pre">UsageError</span></code></a> to inform the user that something went wrong.</li>
+<li><a class="reference internal" href="api.html#click.BadParameter" title="click.BadParameter"><code class="xref py py-exc docutils literal"><span class="pre">BadParameter</span></code></a> to inform the user that something went wrong with
+a specific parameter.  These are often handled internally in Click and
+augmented with extra information if possible.  For instance if those
+are raised from a callback Click will automatically augment it with
+the parameter name if possible.</li>
+<li><a class="reference internal" href="api.html#click.FileError" title="click.FileError"><code class="xref py py-exc docutils literal"><span class="pre">FileError</span></code></a> this is an error that is raised by the
+<code class="xref py py-exc docutils literal"><span class="pre">FileType</span></code> if Click encounters issues opening the file.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><p class="logo"><a href="index.html">
+  <img class="logo" src="_static/click-small@2x.png" width="120" height="50" alt="Logo">
+</a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Exception Handling</a><ul>
+<li><a class="reference internal" href="#where-are-errors-handled">Where are Errors Handled?</a></li>
+<li><a class="reference internal" href="#what-if-i-don-t-want-that">What if I don&#8217;t want that?</a></li>
+<li><a class="reference internal" href="#which-exceptions-exist">Which Exceptions Exist?</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="bashcomplete.html" title="previous chapter">Bash Complete</a></li>
+      <li>Next: <a href="python3.html" title="next chapter">Python 3 Support</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/exceptions.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Armin Ronacher.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/exceptions.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
